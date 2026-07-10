@@ -86,3 +86,5 @@ Dark background #0d0f17. Custom wordmark: "Spine Hunt" in bold, modern sans-seri
 - **B. Treasure Hunt** — deep forest green + gold foil accents, map-dotted-line motifs. Fits: Spine Hunt, Book Scout, Bookline
 - **C. Peach Neon** — current ink bg but peach/coral #FF8B6A primary with teal support; Atlanta summer-night energy. Fits: Stack Peach, Page & Peach, Stacks ATL
 - **D. Storybook Soft** — warm paper light-mode-first, rounded everything, crayon-texture icons; parents/kids lead. Fits: Dewey, Shelfie
+
+**DECISION (2026-07-10): Dewey + Library Nostalgia theme.** Aged-paper light default, reading-room dark, date-stamp red #b5382e, stamp-pad blue, Special Elite wordmark, Courier Prime accents, stamp-style status pills, index-card red top rules.

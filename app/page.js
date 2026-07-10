@@ -14,14 +14,25 @@ import {
   Loader2,
   Copy,
   AlertCircle,
+  Baby,
+  Blocks,
+  Backpack,
+  Bone,
+  Rocket,
+  Truck,
+  Laugh,
+  Heart,
+  PawPrint,
+  Zap,
+  Trophy,
 } from "lucide-react";
 import branches from "@/data/branches.json";
 import starterLists from "@/data/starterLists.json";
 import { parseBookList } from "@/lib/parseBookList";
 
-const THEME_KEY = "bookscout-theme";
-const BRANCH_KEY = "bookscout-branch";
-const WISHLIST_KEY = "bookscout-wishlist";
+const THEME_KEY = "dewey-theme";
+const BRANCH_KEY = "dewey-branch";
+const WISHLIST_KEY = "dewey-wishlist";
 const DEFAULT_BRANCH = "PONCE";
 
 function loadJSON(key, fallback) {
@@ -41,6 +52,20 @@ function saveJSON(key, value) {
     // storage unavailable — ignore
   }
 }
+
+const LIST_ICONS = {
+  "ages-3-5": Baby,
+  "ages-6-8": Blocks,
+  "ages-9-12": Backpack,
+  dinosaurs: Bone,
+  space: Rocket,
+  "trucks-things-that-go": Truck,
+  "funny-books": Laugh,
+  "big-feelings": Heart,
+  animals: PawPrint,
+  "graphic-novels": Zap,
+  "award-winners": Trophy,
+};
 
 const STATUS_CONFIG = {
   on_shelf: { label: "On Shelf", pillClass: "pill-on-shelf" },
@@ -78,9 +103,15 @@ function ResultCard({ result, onAddToWishlist }) {
   return (
     <div className="card">
       <div className="card-row">
-        <div>
-          <p className="card-title">{title}</p>
-          {result.author && <p className="card-author">{result.author}</p>}
+        <div className="card-lead">
+          {result.coverUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={result.coverUrl} alt="" className="cover" loading="lazy" />
+          )}
+          <div>
+            <p className="card-title">{title}</p>
+            {result.author && <p className="card-author">{result.author}</p>}
+          </div>
         </div>
         <button
           className="btn-icon"
@@ -115,7 +146,7 @@ function SkeletonList({ count = 3 }) {
 }
 
 export default function Home() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
   const [activeTab, setActiveTab] = useState("check");
   const [wishlist, setWishlist] = useState([]);
@@ -144,8 +175,8 @@ export default function Home() {
     if (storedTheme) {
       setTheme(storedTheme);
     } else if (typeof window !== "undefined") {
-      const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
-      setTheme(prefersLight ? "light" : "dark");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setTheme(prefersDark ? "dark" : "light");
     }
     setBranch(loadJSON(BRANCH_KEY, DEFAULT_BRANCH));
     setWishlist(loadJSON(WISHLIST_KEY, []));
@@ -279,7 +310,7 @@ export default function Home() {
       <header className="header">
         <div>
           <h1 className="wordmark">
-            Book <span className="accent">Scout</span>
+            Dewey<span className="accent">.</span>
           </h1>
           <p className="tagline">Find your next read on a Fulton County shelf</p>
         </div>
@@ -363,7 +394,11 @@ export default function Home() {
                       onClick={() => applyStarterList(l)}
                       disabled={checkLoading}
                     >
-                      <span aria-hidden="true">{l.emoji}</span> {l.label}
+                      {(() => {
+                        const Icon = LIST_ICONS[l.id];
+                        return Icon ? <Icon size={14} className="chip-icon" /> : <span aria-hidden="true">{l.emoji}</span>;
+                      })()}
+                      {l.label}
                     </button>
                   ))}
               </div>
@@ -429,12 +464,18 @@ export default function Home() {
                 return (
                   <div key={i} className="card">
                     <div className="card-row">
-                      <div>
+                      <div className="card-lead">
+                        {avail?.result?.coverUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={avail.result.coverUrl} alt="" className="cover" loading="lazy" />
+                        )}
+                        <div>
                         <p className="card-title">{rec.title}</p>
                         <p className="card-author">
                           {rec.author}
                           {rec.year ? ` · ${rec.year}` : ""}
                         </p>
+                        </div>
                       </div>
                       <button
                         className="btn-icon"

@@ -1,61 +1,65 @@
+/* Dewey — Library Nostalgia. Light (aged paper) is the default; dark is the reading room. */
 :root {
-  --bg: #0d0f17;
-  --surface: #151827;
-  --surface-hover: #1b1f33;
-  --border: #262a40;
-  --text: #e8eaf2;
-  --muted: #8b90a5;
-  --accent: #2dd4bf;
-  --accent-text: #06201c;
-  --accent2: #8b5cf6;
-  --amber: #f59e0b;
-  --amber-bg: rgba(245, 158, 11, 0.14);
-  --teal-bg: rgba(45, 212, 191, 0.14);
-  --violet-bg: rgba(139, 92, 246, 0.14);
-  --muted-bg: rgba(139, 144, 165, 0.14);
-  --danger: #f87171;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --bg: #f4eede;
+  --surface: #fdf9ef;
+  --surface-hover: #f0e8d4;
+  --border: #d9cdb2;
+  --text: #2b2419;
+  --muted: #7a6f5a;
+  --accent: #b5382e;
+  --accent-text: #fdf9ef;
+  --accent2: #3d5a92;
+  --amber: #b5382e;
+  --amber-bg: rgba(181, 56, 46, 0.1);
+  --teal-bg: rgba(46, 107, 79, 0.12);
+  --green: #2e6b4f;
+  --violet-bg: rgba(61, 90, 146, 0.12);
+  --muted-bg: rgba(122, 111, 90, 0.12);
+  --danger: #b5382e;
+  --radius: 8px;
+  --radius-sm: 5px;
+  --shadow: 0 2px 10px rgba(63, 51, 30, 0.12);
 }
 
-:root[data-theme="light"] {
-  --bg: #faf9f6;
-  --surface: #ffffff;
-  --surface-hover: #f2f0ea;
-  --border: #e5e2d9;
-  --text: #201f1a;
-  --muted: #6b6a63;
-  --accent: #0f9c8c;
-  --accent-text: #ffffff;
-  --accent2: #7c3aed;
-  --amber: #b45309;
-  --amber-bg: rgba(180, 83, 9, 0.1);
-  --teal-bg: rgba(15, 156, 140, 0.1);
-  --violet-bg: rgba(124, 58, 237, 0.1);
-  --muted-bg: rgba(107, 106, 99, 0.1);
-  --danger: #dc2626;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+:root[data-theme="dark"] {
+  --bg: #211b12;
+  --surface: #2b2417;
+  --surface-hover: #352c1c;
+  --border: #493d27;
+  --text: #ece2ca;
+  --muted: #a2957a;
+  --accent: #d9604f;
+  --accent-text: #211b12;
+  --accent2: #8ba3cc;
+  --amber: #d9604f;
+  --amber-bg: rgba(217, 96, 79, 0.15);
+  --teal-bg: rgba(97, 168, 134, 0.15);
+  --green: #61a886;
+  --violet-bg: rgba(139, 163, 204, 0.15);
+  --muted-bg: rgba(162, 149, 122, 0.14);
+  --danger: #d9604f;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #faf9f6;
-    --surface: #ffffff;
-    --surface-hover: #f2f0ea;
-    --border: #e5e2d9;
-    --text: #201f1a;
-    --muted: #6b6a63;
-    --accent: #0f9c8c;
-    --accent-text: #ffffff;
-    --accent2: #7c3aed;
-    --amber: #b45309;
-    --amber-bg: rgba(180, 83, 9, 0.1);
-    --teal-bg: rgba(15, 156, 140, 0.1);
-    --violet-bg: rgba(124, 58, 237, 0.1);
-    --muted-bg: rgba(107, 106, 99, 0.1);
-    --danger: #dc2626;
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #211b12;
+    --surface: #2b2417;
+    --surface-hover: #352c1c;
+    --border: #493d27;
+    --text: #ece2ca;
+    --muted: #a2957a;
+    --accent: #d9604f;
+    --accent-text: #211b12;
+    --accent2: #8ba3cc;
+    --amber: #d9604f;
+    --amber-bg: rgba(217, 96, 79, 0.15);
+    --teal-bg: rgba(97, 168, 134, 0.15);
+    --green: #61a886;
+    --violet-bg: rgba(139, 163, 204, 0.15);
+    --muted-bg: rgba(162, 149, 122, 0.14);
+    --danger: #d9604f;
+    --shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -93,13 +97,13 @@ body {
 }
 
 .wordmark {
-  font-family: var(--font-display), sans-serif;
-  font-size: 34px;
-  letter-spacing: 0.04em;
+  font-family: var(--font-display), serif;
+  font-size: 32px;
+  letter-spacing: 0.01em;
   line-height: 1;
   margin: 0;
   display: flex;
-  gap: 8px;
+  gap: 2px;
 }
 
 .wordmark .accent {
@@ -338,14 +342,17 @@ textarea.input-area:focus {
 
 /* Cards */
 
+/* Index-card look: red top rule like a catalog card */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
   border-radius: var(--radius);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: var(--shadow);
 }
 
 .card-row {
@@ -373,6 +380,7 @@ textarea.input-area:focus {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  font-family: var(--font-mono), monospace;
   font-size: 12px;
   color: var(--muted);
 }
@@ -408,16 +416,21 @@ textarea.input-area:focus {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 3px;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   white-space: nowrap;
+  border: 1.5px solid currentColor;
+  transform: rotate(-1deg);
 }
 
 .pill-on-shelf {
   background: var(--teal-bg);
-  color: var(--accent);
+  color: var(--green);
 }
 
 .pill-checked-out {
@@ -438,13 +451,16 @@ textarea.input-area:focus {
 .badge-verify {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  background: var(--amber-bg);
-  color: var(--amber);
-  border: 1px solid var(--amber);
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--muted-bg);
+  color: var(--muted);
+  border: 1px dashed var(--muted);
 }
 
 /* Skeleton loaders */
@@ -581,4 +597,28 @@ textarea.input-area:focus {
 .chip:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Book covers */
+
+.card-lead {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.cover {
+  width: 48px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  box-shadow: 1px 2px 4px rgba(63, 51, 30, 0.25);
+  flex-shrink: 0;
+  background: var(--surface-hover);
+}
+
+.chip-icon {
+  color: var(--accent);
 }

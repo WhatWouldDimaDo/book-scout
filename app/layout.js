@@ -1,7 +1,7 @@
-import { Bebas_Neue, DM_Sans } from "next/font/google";
+import { Special_Elite, DM_Sans, Courier_Prime } from "next/font/google";
 import "./globals.css";
 
-const bebasNeue = Bebas_Neue({
+const specialElite = Special_Elite({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display",
@@ -14,19 +14,28 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const courierPrime = Courier_Prime({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
 export const metadata = {
-  title: "Book Scout",
+  title: "Dewey",
   description: "Find your next read on a Fulton County shelf",
 };
 
 export const viewport = {
-  themeColor: "#0d0f17",
+  themeColor: "#f4eede",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${bebasNeue.variable} ${dmSans.variable}`}>{children}</body>
+      <body className={`${specialElite.variable} ${dmSans.variable} ${courierPrime.variable}`}>
+        {children}
+      </body>
     </html>
   );
 }
