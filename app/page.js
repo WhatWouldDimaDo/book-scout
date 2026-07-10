@@ -25,6 +25,24 @@ import {
   PawPrint,
   Zap,
   Trophy,
+  Milk,
+  ToyBrick,
+  Puzzle,
+  Palette,
+  Swords,
+  Crown,
+  BedDouble,
+  Type,
+  Castle,
+  Volleyball,
+  Bookmark,
+  BookmarkCheck,
+  X,
+  CheckSquare,
+  FileDown,
+  Calculator,
+  Send,
+  ShoppingBag,
 } from "lucide-react";
 import branches from "@/data/branches.json";
 import starterLists from "@/data/starterLists.json";
@@ -57,6 +75,10 @@ const LIST_ICONS = {
   "ages-3-5": Baby,
   "ages-6-8": Blocks,
   "ages-9-12": Backpack,
+  "age-1": Milk,
+  "age-2": ToyBrick,
+  "age-3": Puzzle,
+  "age-4": Palette,
   dinosaurs: Bone,
   space: Rocket,
   "trucks-things-that-go": Truck,
@@ -65,6 +87,12 @@ const LIST_ICONS = {
   animals: PawPrint,
   "graphic-novels": Zap,
   "award-winners": Trophy,
+  "popular-boys": Swords,
+  "popular-girls": Crown,
+  bedtime: BedDouble,
+  "abc-counting": Type,
+  "fairy-tales-princesses": Castle,
+  sports: Volleyball,
 };
 
 const STATUS_CONFIG = {
@@ -73,6 +101,12 @@ const STATUS_CONFIG = {
   elsewhere: { label: "Elsewhere", pillClass: "pill-elsewhere" },
   not_found: { label: "Not Found", pillClass: "pill-not-found" },
 };
+
+const FORMAT_OPTIONS = [
+  { id: "print", label: "Print" },
+  { id: "ebook", label: "eBook" },
+  { id: "audiobook", label: "Audiobook" },
+];
 
 function formatDueDate(dueDate) {
   if (!dueDate) return null;
@@ -83,23 +117,171 @@ function formatDueDate(dueDate) {
   }
 }
 
+function statusLabelFor(result) {
+  const config = STATUS_CONFIG[result.status] || STATUS_CONFIG.not_found;
+  if (result.isDigital) {
+    if (result.status === "on_shelf") return "Available Now";
+    if (result.status === "checked_out") return "Wait List";
+  }
+  if (result.status === "checked_out" && result.dueDate) {
+    return `Checked Out — back ${formatDueDate(result.dueDate)}`;
+  }
+  if (result.status === "elsewhere") {
+    return result.otherBranchCount > 0
+      ? `At ${result.otherBranchCount} other branch${result.otherBranchCount === 1 ? "" : "es"}`
+      : "Not at this branch";
+  }
+  return config.label;
+}
+
 function StatusPill({ result }) {
   if (!result) return null;
   const config = STATUS_CONFIG[result.status] || STATUS_CONFIG.not_found;
-  let label = config.label;
-  if (result.status === "checked_out" && result.dueDate) {
-    label = `Checked Out — back ${formatDueDate(result.dueDate)}`;
-  } else if (result.status === "elsewhere") {
-    label =
-      result.otherBranchCount > 0
-        ? `At ${result.otherBranchCount} other branch${result.otherBranchCount === 1 ? "" : "es"}`
-        : "Not at this branch";
-  }
-  return <span className={`pill ${config.pillClass}`}>{label}</span>;
+  return <span className={`pill ${config.pillClass}`}>{statusLabelFor(result)}</span>;
 }
 
-function ResultCard({ result, onAddToWishlist }) {
+// Book identity helpers — shared across wishlist toggling, dedupe, and export.
+function sameBook(a, b) {
+  return (
+    (a.title || "").trim().toLowerCase() === (b.title || "").trim().toLowerCase() &&
+    (a.author || "").trim().toLowerCase() === (b.author || "").trim().toLowerCase()
+  );
+}
+
+function bookLine(b) {
+  return b.author ? `${b.title} by ${b.author}` : b.title;
+}
+
+function amazonSearchUrl(title, author) {
+  const q = [title, author].filter(Boolean).join(" ");
+  return `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
+}
+
+function priceKey(title, author) {
+  return `${(title || "").trim().toLowerCase()}|${(author || "").trim().toLowerCase()}`;
+}
+
+// Appends `newLines` to `existingText`, skipping any line already present (case-insensitive).
+function dedupeAppend(existingText, newLines) {
+  const existingSet = new Set(
+    existingText
+      .split("\n")
+      .map((l) => l.trim().toLowerCase())
+      .filter(Boolean)
+  );
+  const toAdd = newLines.filter((l) => !existingSet.has(l.trim().toLowerCase()));
+  if (toAdd.length === 0) return existingText;
+  const prefix = existingText && !existingText.endsWith("\n") ? `${existingText}\n` : existingText;
+  return prefix + toAdd.join("\n");
+}
+
+function resultsToText(results) {
+  return results
+    .map((r) => {
+      const title = r.matchedTitle || r.input;
+      const author = r.author || "";
+      const parts = [statusLabelFor(r), author ? `${title} by ${author}` : title];
+      if (r.callNumber && !r.isDigital) parts.push(r.callNumber);
+      return parts.join(" — ");
+    })
+    .join("\n");
+}
+
+function csvEscape(value) {
+  const s = String(value ?? "");
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function resultsToCsv(results, priceMap) {
+  const header = [
+    "input",
+    "matchedTitle",
+    "author",
+    "status",
+    "callNumber",
+    "dueDate",
+    "otherBranchCount",
+    "recordUrl",
+    "amazonUrl",
+    "price",
+  ];
+  const rows = results.map((r) => {
+    const title = r.matchedTitle || r.input;
+    const author = r.author || "";
+    const priceEntry = priceMap[priceKey(title, author)];
+    return [
+      r.input,
+      r.matchedTitle || "",
+      author,
+      r.status || "",
+      r.callNumber || "",
+      r.dueDate || "",
+      r.otherBranchCount ?? "",
+      r.recordUrl || "",
+      amazonSearchUrl(title, author),
+      priceEntry?.price ?? "",
+    ];
+  });
+  return [header, ...rows].map((row) => row.map(csvEscape).join(",")).join("\r\n");
+}
+
+function downloadCsv(filename, csvContent) {
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function wishlistAsResultRows(wishlist) {
+  return wishlist.map((b) => ({
+    input: b.title,
+    matchedTitle: b.title,
+    author: b.author,
+    status: "",
+    callNumber: "",
+    dueDate: "",
+    otherBranchCount: "",
+    recordUrl: "",
+  }));
+}
+
+function buildStats(results, priceMap) {
+  const buckets = {
+    on_shelf: { label: "On shelf at my branch", count: 0, sum: 0, unpriced: 0 },
+    elsewhere: { label: "At other branches", count: 0, sum: 0, unpriced: 0 },
+    checked_out: { label: "Checked out everywhere", count: 0, sum: 0, unpriced: 0 },
+    not_found: { label: "Not found", count: 0, sum: 0, unpriced: 0 },
+  };
+  let buyItAll = 0;
+  let freeToday = 0;
+
+  results.forEach((r) => {
+    const title = r.matchedTitle || r.input;
+    const author = r.author || "";
+    const price = priceMap[priceKey(title, author)]?.price ?? null;
+    const bucket = buckets[r.status] || buckets.not_found;
+    bucket.count += 1;
+    if (price != null) {
+      bucket.sum += price;
+      buyItAll += price;
+      if (r.status === "on_shelf") freeToday += price;
+    } else {
+      bucket.unpriced += 1;
+    }
+  });
+
+  return { buckets, total: results.length, buyItAll, freeToday };
+}
+
+function ResultCard({ result, wishlist, onToggleWishlist }) {
   const title = result.matchedTitle || result.input;
+  const author = result.author || "";
+  const inWishlist = wishlist.some((b) => sameBook(b, { title, author }));
   return (
     <div className="card">
       <div className="card-row">
@@ -110,27 +292,32 @@ function ResultCard({ result, onAddToWishlist }) {
           )}
           <div>
             <p className="card-title">{title}</p>
-            {result.author && <p className="card-author">{result.author}</p>}
+            {author && <p className="card-author">{author}</p>}
           </div>
         </div>
         <button
-          className="btn-icon"
-          onClick={() => onAddToWishlist({ title, author: result.author || "" })}
-          title="Add to wishlist"
+          className={`btn-icon ${inWishlist ? "active" : ""}`}
+          onClick={() => onToggleWishlist({ title, author })}
+          title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <Plus size={16} />
+          {inWishlist ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
         </button>
       </div>
       <div className="card-meta">
         <StatusPill result={result} />
         {result.confidence === "verify" && <span className="badge-verify">Verify match</span>}
-        {result.callNumber && <span>{result.callNumber}</span>}
+        {result.callNumber && !result.isDigital && <span>{result.callNumber}</span>}
       </div>
-      {result.recordUrl && (
-        <a href={result.recordUrl} target="_blank" rel="noreferrer" className="record-link">
-          View record <ExternalLink size={12} />
+      <div className="card-links">
+        {result.recordUrl && (
+          <a href={result.recordUrl} target="_blank" rel="noreferrer" className="record-link">
+            View record <ExternalLink size={12} />
+          </a>
+        )}
+        <a href={amazonSearchUrl(title, author)} target="_blank" rel="noreferrer" className="amazon-link">
+          Amazon <ShoppingBag size={12} />
         </a>
-      )}
+      </div>
     </div>
   );
 }
@@ -145,18 +332,78 @@ function SkeletonList({ count = 3 }) {
   );
 }
 
+function StarterListPanel({ list, listText, onAdd, onClose }) {
+  const [checked, setChecked] = useState(() => list.books.map(() => false));
+
+  function toggle(i) {
+    setChecked((prev) => prev.map((c, idx) => (idx === i ? !c : c)));
+  }
+
+  function addBooks(books) {
+    if (books.length === 0) return;
+    onAdd(dedupeAppend(listText, books.map(bookLine)));
+    onClose();
+  }
+
+  return (
+    <div className="starter-panel">
+      <div className="starter-panel-header">
+        <p className="starter-panel-title">
+          {list.label} · {list.books.length} books
+        </p>
+        <button className="btn-icon" onClick={onClose} title="Close">
+          <X size={14} />
+        </button>
+      </div>
+      <div className="starter-panel-list">
+        {list.books.map((b, i) => (
+          <label key={i} className="starter-panel-item">
+            <input type="checkbox" checked={checked[i]} onChange={() => toggle(i)} />
+            <span>
+              {b.title}
+              {b.author && <span className="item-author"> — {b.author}</span>}
+            </span>
+          </label>
+        ))}
+      </div>
+      <div className="starter-panel-actions">
+        <button className="btn btn-secondary" onClick={() => setChecked(list.books.map(() => true))}>
+          <CheckSquare size={14} />
+          Select all
+        </button>
+        <button
+          className="btn btn-secondary"
+          onClick={() => addBooks(list.books.filter((_, i) => checked[i]))}
+          disabled={!checked.some(Boolean)}
+        >
+          <Plus size={14} />
+          Add selected to list
+        </button>
+        <button className="btn btn-primary" onClick={() => addBooks(list.books)}>
+          <Plus size={14} />
+          Add all
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [theme, setTheme] = useState("light");
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
   const [activeTab, setActiveTab] = useState("check");
   const [wishlist, setWishlist] = useState([]);
   const [hydrated, setHydrated] = useState(false);
+  const [priceMap, setPriceMap] = useState({});
 
   // Check a List
   const [listText, setListText] = useState("");
+  const [checkFormat, setCheckFormat] = useState("print");
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
   const [checkError, setCheckError] = useState(null);
+  const [openStarterId, setOpenStarterId] = useState(null);
+  const [checkCopyLabel, setCheckCopyLabel] = useState("Copy");
 
   // Get Recs
   const [recPrompt, setRecPrompt] = useState("");
@@ -169,6 +416,9 @@ export default function Home() {
   const [wishlistResults, setWishlistResults] = useState(null);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [copyLabel, setCopyLabel] = useState("Copy as text");
+  const [wishlistResultsCopyLabel, setWishlistResultsCopyLabel] = useState("Copy");
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsResult, setStatsResult] = useState(null);
 
   useEffect(() => {
     const storedTheme = loadJSON(THEME_KEY, null);
@@ -199,12 +449,10 @@ export default function Home() {
     saveJSON(WISHLIST_KEY, wishlist);
   }, [wishlist, hydrated]);
 
-  const addToWishlist = useCallback((book) => {
+  const toggleWishlist = useCallback((book) => {
     setWishlist((prev) => {
-      const exists = prev.some(
-        (b) => b.title.toLowerCase() === book.title.toLowerCase() && b.author === book.author
-      );
-      if (exists) return prev;
+      const exists = prev.some((b) => sameBook(b, book));
+      if (exists) return prev.filter((b) => !sameBook(b, book));
       return [...prev, { ...book, addedAt: new Date().toISOString() }];
     });
   }, []);
@@ -213,15 +461,31 @@ export default function Home() {
     setWishlist((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  async function runAvailability(books) {
+  async function runAvailability(books, format = "print") {
     const res = await fetch("/api/availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ books, branch }),
+      body: JSON.stringify({ books, branch, format }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Availability check failed");
     return data.results;
+  }
+
+  async function fetchPrices(books) {
+    if (books.length === 0) return [];
+    try {
+      const res = await fetch("/api/pricing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ books: books.slice(0, 30) }),
+      });
+      const data = await res.json();
+      if (!res.ok) return [];
+      return data.results;
+    } catch {
+      return [];
+    }
   }
 
   async function runCheck(books) {
@@ -230,7 +494,7 @@ export default function Home() {
     setCheckError(null);
     setCheckResults(null);
     try {
-      const results = await runAvailability(books.slice(0, 25));
+      const results = await runAvailability(books.slice(0, 25), checkFormat);
       setCheckResults(results);
     } catch (err) {
       setCheckError(err.message);
@@ -243,10 +507,11 @@ export default function Home() {
     runCheck(parseBookList(listText));
   }
 
-  function applyStarterList(list) {
-    const books = list.books.slice(0, 25);
-    setListText(books.map((b) => `${b.title} by ${b.author}`).join("\n"));
-    runCheck(books);
+  function copyResults(results, setLabel) {
+    navigator.clipboard.writeText(resultsToText(results)).then(() => {
+      setLabel("Copied!");
+      setTimeout(() => setLabel("Copy"), 1500);
+    });
   }
 
   async function handleGetRecs() {
@@ -297,12 +562,55 @@ export default function Home() {
     }
   }
 
+  async function handleWishlistStats() {
+    if (wishlist.length === 0) return;
+    setStatsLoading(true);
+    setStatsResult(null);
+    try {
+      const books = wishlist.slice(0, 25).map((b) => ({ title: b.title, author: b.author }));
+      const [availResults, priceResults] = await Promise.all([
+        runAvailability(books),
+        fetchPrices(books),
+      ]);
+      setWishlistResults(availResults);
+      setPriceMap((prev) => {
+        const next = { ...prev };
+        priceResults.forEach((p) => {
+          next[priceKey(p.title, p.author)] = { price: p.price, currency: p.currency };
+        });
+        return next;
+      });
+      setStatsResult(buildStats(availResults, {
+        ...priceMap,
+        ...Object.fromEntries(priceResults.map((p) => [priceKey(p.title, p.author), { price: p.price, currency: p.currency }])),
+      }));
+    } catch {
+      setStatsResult(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  }
+
   function handleCopyWishlist() {
     const text = wishlist.map((b) => (b.author ? `${b.title} by ${b.author}` : b.title)).join("\n");
     navigator.clipboard.writeText(text).then(() => {
       setCopyLabel("Copied!");
       setTimeout(() => setCopyLabel("Copy as text"), 1500);
     });
+  }
+
+  function handleClearWishlist() {
+    if (wishlist.length === 0) return;
+    if (!window.confirm("Clear your entire wishlist? This can't be undone.")) return;
+    setWishlist([]);
+    setWishlistResults(null);
+    setStatsResult(null);
+  }
+
+  function handleSendToCheck() {
+    if (wishlist.length === 0) return;
+    setListText((prev) => dedupeAppend(prev, wishlist.map(bookLine)));
+    setActiveTab("check");
   }
 
   return (
@@ -373,6 +681,20 @@ export default function Home() {
             value={listText}
             onChange={(e) => setListText(e.target.value)}
           />
+
+          <div className="format-selector">
+            {FORMAT_OPTIONS.map((f) => (
+              <button
+                key={f.id}
+                className={`format-option ${checkFormat === f.id ? "active" : ""}`}
+                onClick={() => setCheckFormat(f.id)}
+                disabled={checkLoading}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           <div className="card-actions">
             <button className="btn btn-primary" onClick={handleCheckList} disabled={checkLoading}>
               {checkLoading ? <Loader2 size={16} className="spin" /> : <Check size={16} />}
@@ -390,9 +712,8 @@ export default function Home() {
                   .map((l) => (
                     <button
                       key={l.id}
-                      className="chip"
-                      onClick={() => applyStarterList(l)}
-                      disabled={checkLoading}
+                      className={`chip ${openStarterId === l.id ? "active" : ""}`}
+                      onClick={() => setOpenStarterId((prev) => (prev === l.id ? null : l.id))}
                     >
                       {(() => {
                         const Icon = LIST_ICONS[l.id];
@@ -405,6 +726,15 @@ export default function Home() {
             ))}
           </div>
 
+          {openStarterId && (
+            <StarterListPanel
+              list={starterLists.find((l) => l.id === openStarterId)}
+              listText={listText}
+              onAdd={setListText}
+              onClose={() => setOpenStarterId(null)}
+            />
+          )}
+
           {checkError && (
             <div className="error-banner">
               <AlertCircle size={14} style={{ verticalAlign: "-2px", marginRight: 6 }} />
@@ -414,12 +744,27 @@ export default function Home() {
 
           {checkLoading && <SkeletonList count={Math.min(parseBookList(listText).length || 3, 6)} />}
 
-          {!checkLoading && checkResults && (
-            <div className="results-list">
-              {checkResults.map((r, i) => (
-                <ResultCard key={i} result={r} onAddToWishlist={addToWishlist} />
-              ))}
-            </div>
+          {!checkLoading && checkResults && checkResults.length > 0 && (
+            <>
+              <div className="export-row">
+                <button className="btn btn-secondary" onClick={() => copyResults(checkResults, setCheckCopyLabel)}>
+                  <Copy size={16} />
+                  {checkCopyLabel}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => downloadCsv("dewey-check-results.csv", resultsToCsv(checkResults, priceMap))}
+                >
+                  <FileDown size={16} />
+                  CSV
+                </button>
+              </div>
+              <div className="results-list">
+                {checkResults.map((r, i) => (
+                  <ResultCard key={i} result={r} wishlist={wishlist} onToggleWishlist={toggleWishlist} />
+                ))}
+              </div>
+            </>
           )}
 
           {!checkLoading && checkResults === null && !checkError && (
@@ -461,6 +806,7 @@ export default function Home() {
             <div className="results-list">
               {recResults.map((rec, i) => {
                 const avail = recAvailability[i];
+                const inWishlist = wishlist.some((b) => sameBook(b, { title: rec.title, author: rec.author }));
                 return (
                   <div key={i} className="card">
                     <div className="card-row">
@@ -478,11 +824,11 @@ export default function Home() {
                         </div>
                       </div>
                       <button
-                        className="btn-icon"
-                        onClick={() => addToWishlist({ title: rec.title, author: rec.author })}
-                        title="Add to wishlist"
+                        className={`btn-icon ${inWishlist ? "active" : ""}`}
+                        onClick={() => toggleWishlist({ title: rec.title, author: rec.author })}
+                        title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
                       >
-                        <Plus size={16} />
+                        {inWishlist ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
                       </button>
                     </div>
                     <p className="one-liner">{rec.oneLiner}</p>
@@ -527,20 +873,78 @@ export default function Home() {
                   {wishlistLoading ? <Loader2 size={16} className="spin" /> : <Library size={16} />}
                   Check all at my branch
                 </button>
+                <button className="btn btn-secondary" onClick={handleWishlistStats} disabled={statsLoading}>
+                  {statsLoading ? <Loader2 size={16} className="spin" /> : <Calculator size={16} />}
+                  Check all + price it
+                </button>
                 <button className="btn btn-secondary" onClick={handleCopyWishlist}>
                   <Copy size={16} />
                   {copyLabel}
                 </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    downloadCsv(
+                      "dewey-wishlist.csv",
+                      resultsToCsv(wishlistResults || wishlistAsResultRows(wishlist), priceMap)
+                    )
+                  }
+                >
+                  <FileDown size={16} />
+                  CSV
+                </button>
+                <button className="btn btn-secondary" onClick={handleSendToCheck}>
+                  <Send size={16} />
+                  Send to Check tab
+                </button>
+                <button className="btn btn-secondary" onClick={handleClearWishlist}>
+                  <Trash2 size={16} />
+                  Clear all
+                </button>
               </div>
+
+              {statsResult && (
+                <div className="stats-card">
+                  <h3>Wishlist Ledger</h3>
+                  {Object.values(statsResult.buckets).map((b) => (
+                    <div className="stats-row" key={b.label}>
+                      <span className="stats-label">{b.label}</span>
+                      <span className="stats-value">
+                        {b.count} {b.count === 1 ? "book" : "books"} · ${b.sum.toFixed(2)}
+                        {b.unpriced > 0 ? ` (${b.unpriced} unpriced)` : ""}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="stats-row total">
+                    <span className="stats-label">TOTAL</span>
+                    <span className="stats-value">{statsResult.total} books</span>
+                  </div>
+                  <div className="stats-summary">
+                    <span className="buy-it-all">To buy it all: ${statsResult.buyItAll.toFixed(2)}</span>
+                    <span className="saved">Free at the library today: ${statsResult.freeToday.toFixed(2)} saved</span>
+                  </div>
+                </div>
+              )}
 
               {wishlistLoading && <SkeletonList count={Math.min(wishlist.length, 6)} />}
 
               {!wishlistLoading && wishlistResults && (
-                <div className="results-list">
-                  {wishlistResults.map((r, i) => (
-                    <ResultCard key={i} result={r} onAddToWishlist={addToWishlist} />
-                  ))}
-                </div>
+                <>
+                  <div className="export-row">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => copyResults(wishlistResults, setWishlistResultsCopyLabel)}
+                    >
+                      <Copy size={16} />
+                      {wishlistResultsCopyLabel}
+                    </button>
+                  </div>
+                  <div className="results-list">
+                    {wishlistResults.map((r, i) => (
+                      <ResultCard key={i} result={r} wishlist={wishlist} onToggleWishlist={toggleWishlist} />
+                    ))}
+                  </div>
+                </>
               )}
 
               {!wishlistResults && (
