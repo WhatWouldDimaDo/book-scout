@@ -59,3 +59,30 @@ Dark background #0d0f17. Custom wordmark: "Spine Hunt" in bold, modern sans-seri
 ## Recommendation
 
 **Stack Peach** leads for distinctiveness + memorability. **Shelf Finder** is safest for SEO & clarity. **Spine Hunt** lands between playful + literary. All three test well at 64px with proposed color scheme.
+
+---
+
+## Round 2 — More Name Candidates (2026-07-10)
+
+| # | Name | Rationale | Vibe |
+|---|------|-----------|------|
+| 7 | **Shelfie** | One word, instantly memorable, selfie pun — "take a Shelfie before you go." | Playful, shareable, app-native |
+| 8 | **On Shelf** | The literal status pill in the app becomes the brand. "Is it On Shelf?" | Minimal, product-as-name |
+| 9 | **Stacks ATL** | "The stacks" (library slang) + city tag. Room to become Stacks NYC etc. | Urban, expandable, hip |
+| 10 | **Checkout** | Double meaning: library checkout + "check it out." | Bold, generic-risk (commerce collision) |
+| 11 | **Bookline** | Beeline to a book. "Make a bookline for Ponce." | Fast, purposeful |
+| 12 | **Dewey** | The Dewey Decimal mascot-in-waiting. Friendly librarian energy. | Kid-friendly, mascot potential |
+| 13 | **Page & Peach** | Literary + Atlanta, ampersand feels like a neighborhood shop. | Cozy, boutique, Southern |
+| 14 | **BranchOut** | Library branches + trying new books. Verb-brand. | Optimistic, clever, double meaning |
+| 15 | **The Card Catalog** | Nostalgic artifact reborn as a modern tool. | Retro-cool, wink to book lovers |
+| 16 | **Borrowed** | The whole ethos — read more, buy less. | Warm, values-led, anti-consumerist |
+| 17 | **Litmus ATL** | "Lit" (books/slang) + litmus test for what's available. | Sharp, modern, slightly techy |
+| 18 | **Overdue** | Ironic library joke; memorable. | Edgy, risky (negative connotation) |
+
+**Round 2 standouts:** **Shelfie** (most viral-shareable, kid-appeal), **BranchOut** (best double meaning — branches are literally the core feature), **Dewey** (best mascot/kids-mode potential), **Borrowed** (best values story if pitched to the library).
+
+### Theme directions (beyond current teal/ink)
+- **A. Library Nostalgia** — cream paper, date-stamp red, card-catalog manila; Courier accents. Fits: The Card Catalog, Borrowed, Dewey
+- **B. Treasure Hunt** — deep forest green + gold foil accents, map-dotted-line motifs. Fits: Spine Hunt, Book Scout, Bookline
+- **C. Peach Neon** — current ink bg but peach/coral #FF8B6A primary with teal support; Atlanta summer-night energy. Fits: Stack Peach, Page & Peach, Stacks ATL
+- **D. Storybook Soft** — warm paper light-mode-first, rounded everything, crayon-texture icons; parents/kids lead. Fits: Dewey, Shelfie
