@@ -16,6 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import branches from "@/data/branches.json";
+import starterLists from "@/data/starterLists.json";
 import { parseBookList } from "@/lib/parseBookList";
 
 const THEME_KEY = "bookscout-theme";
@@ -192,8 +193,7 @@ export default function Home() {
     return data.results;
   }
 
-  async function handleCheckList() {
-    const books = parseBookList(listText);
+  async function runCheck(books) {
     if (books.length === 0) return;
     setCheckLoading(true);
     setCheckError(null);
@@ -206,6 +206,16 @@ export default function Home() {
     } finally {
       setCheckLoading(false);
     }
+  }
+
+  function handleCheckList() {
+    runCheck(parseBookList(listText));
+  }
+
+  function applyStarterList(list) {
+    const books = list.books.slice(0, 25);
+    setListText(books.map((b) => `${b.title} by ${b.author}`).join("\n"));
+    runCheck(books);
   }
 
   async function handleGetRecs() {
@@ -338,6 +348,26 @@ export default function Home() {
               Check
             </button>
             <span className="hint">Up to 25 books per check</span>
+          </div>
+
+          <div className="starter-lists">
+            <span className="starter-label">Or start from a list</span>
+            {["age", "topic"].map((group) => (
+              <div key={group} className="chip-row">
+                {starterLists
+                  .filter((l) => l.group === group)
+                  .map((l) => (
+                    <button
+                      key={l.id}
+                      className="chip"
+                      onClick={() => applyStarterList(l)}
+                      disabled={checkLoading}
+                    >
+                      <span aria-hidden="true">{l.emoji}</span> {l.label}
+                    </button>
+                  ))}
+              </div>
+            ))}
           </div>
 
           {checkError && (
