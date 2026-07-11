@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Library,
   Sparkles,
@@ -43,6 +43,9 @@ import {
   Calculator,
   Send,
   ShoppingBag,
+  Settings,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import branches from "@/data/branches.json";
 import starterLists from "@/data/starterLists.json";
@@ -107,6 +110,8 @@ const FORMAT_OPTIONS = [
   { id: "ebook", label: "eBook" },
   { id: "audiobook", label: "Audiobook" },
 ];
+
+const VISIBLE_CHIP_COUNT = 6;
 
 function formatDueDate(dueDate) {
   if (!dueDate) return null;
@@ -278,17 +283,36 @@ function buildStats(results, priceMap) {
   return { buckets, total: results.length, buyItAll, freeToday };
 }
 
+function CatalogResultsHeader({ branchName }) {
+  const dateLabel = new Date().toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return (
+    <div className="catalog-header">
+      CATALOG RESULTS &middot; {branchName} &middot; {dateLabel}
+    </div>
+  );
+}
+
 function ResultCard({ result, wishlist, onToggleWishlist }) {
   const title = result.matchedTitle || result.input;
   const author = result.author || "";
   const inWishlist = wishlist.some((b) => sameBook(b, { title, author }));
+  const hasCallNumber = result.callNumber && !result.isDigital;
   return (
     <div className="card">
       <div className="card-row">
         <div className="card-lead">
-          {result.coverUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={result.coverUrl} alt="" className="cover" loading="lazy" />
+          {result.coverUrl ? (
+            <div className="cover-wrap">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={result.coverUrl} alt="" className="cover" loading="lazy" />
+              {hasCallNumber && <span className="spine-label">{result.callNumber}</span>}
+            </div>
+          ) : (
+            hasCallNumber && <span className="spine-label spine-label-standalone">{result.callNumber}</span>
           )}
           <div>
             <p className="card-title">{title}</p>
@@ -306,7 +330,6 @@ function ResultCard({ result, wishlist, onToggleWishlist }) {
       <div className="card-meta">
         <StatusPill result={result} />
         {result.confidence === "verify" && <span className="badge-verify">Verify match</span>}
-        {result.callNumber && !result.isDigital && <span>{result.callNumber}</span>}
       </div>
       <div className="card-links">
         {result.recordUrl && (
@@ -395,6 +418,8 @@ export default function Home() {
   const [wishlist, setWishlist] = useState([]);
   const [hydrated, setHydrated] = useState(false);
   const [priceMap, setPriceMap] = useState({});
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsRef = useRef(null);
 
   // Check a List
   const [listText, setListText] = useState("");
@@ -404,6 +429,7 @@ export default function Home() {
   const [checkError, setCheckError] = useState(null);
   const [openStarterId, setOpenStarterId] = useState(null);
   const [checkCopyLabel, setCheckCopyLabel] = useState("Copy");
+  const [chipsExpanded, setChipsExpanded] = useState(false);
 
   // Get Recs
   const [recPrompt, setRecPrompt] = useState("");
@@ -411,6 +437,7 @@ export default function Home() {
   const [recLoading, setRecLoading] = useState(false);
   const [recError, setRecError] = useState(null);
   const [recAvailability, setRecAvailability] = useState({});
+  const [recAllLoading, setRecAllLoading] = useState(false);
 
   // Wishlist checks
   const [wishlistResults, setWishlistResults] = useState(null);
@@ -448,6 +475,17 @@ export default function Home() {
     if (!hydrated) return;
     saveJSON(WISHLIST_KEY, wishlist);
   }, [wishlist, hydrated]);
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    function handleOutsideClick(e) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setSettingsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [settingsOpen]);
 
   const toggleWishlist = useCallback((book) => {
     setWishlist((prev) => {
@@ -546,6 +584,21 @@ export default function Home() {
     }
   }
 
+  async function checkAllRecAvailability() {
+    if (!recResults || recResults.length === 0) return;
+    setRecAllLoading(true);
+    setRecAvailability(Object.fromEntries(recResults.map((_, i) => [i, { loading: true }])));
+    try {
+      const books = recResults.map((rec) => ({ title: rec.title, author: rec.author }));
+      const results = await runAvailability(books);
+      setRecAvailability(Object.fromEntries(results.map((result, i) => [i, { loading: false, result }])));
+    } catch {
+      setRecAvailability(Object.fromEntries(recResults.map((_, i) => [i, { loading: false, error: true }])));
+    } finally {
+      setRecAllLoading(false);
+    }
+  }
+
   async function handleCheckWishlist() {
     if (wishlist.length === 0) return;
     setWishlistLoading(true);
@@ -621,34 +674,70 @@ export default function Home() {
             Dewey<span className="accent">.</span>
           </h1>
           <p className="tagline">Find your next read on a Fulton County shelf</p>
+          <button className="settings-summary" onClick={() => setSettingsOpen((v) => !v)}>
+            {branch} &middot; {checkFormat.toUpperCase()}
+          </button>
         </div>
-        <button
-          className="theme-toggle"
-          onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-          title="Toggle theme"
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-      </header>
-
-      <div className="branch-picker">
-        <label htmlFor="branch-select">Your branch</label>
-        <div className="select-wrap">
-          <Library size={16} className="select-icon" />
-          <select
-            id="branch-select"
-            className="branch-select"
-            value={branch}
-            onChange={(e) => setBranch(e.target.value)}
+        <div className="header-actions" ref={settingsRef}>
+          <button
+            className="theme-toggle"
+            onClick={() => setSettingsOpen((v) => !v)}
+            title="Settings"
           >
-            {branches.map((b) => (
-              <option key={b.code} value={b.code}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+            <Settings size={18} />
+          </button>
+          <button
+            className="theme-toggle"
+            onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            title="Toggle theme"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          {settingsOpen && (
+            <div className="settings-popover">
+              <div className="settings-popover-header">
+                <span>Settings</span>
+                <button className="btn-icon" onClick={() => setSettingsOpen(false)} title="Close">
+                  <X size={14} />
+                </button>
+              </div>
+              <div className="settings-field">
+                <label htmlFor="branch-select">Your branch</label>
+                <div className="select-wrap">
+                  <Library size={16} className="select-icon" />
+                  <select
+                    id="branch-select"
+                    className="branch-select"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                  >
+                    {branches.map((b) => (
+                      <option key={b.code} value={b.code}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="settings-field">
+                <label>Format</label>
+                <div className="format-selector">
+                  {FORMAT_OPTIONS.map((f) => (
+                    <button
+                      key={f.id}
+                      className={`format-option ${checkFormat === f.id ? "active" : ""}`}
+                      onClick={() => setCheckFormat(f.id)}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </header>
 
       <nav className="tabs">
         <button
@@ -682,19 +771,6 @@ export default function Home() {
             onChange={(e) => setListText(e.target.value)}
           />
 
-          <div className="format-selector">
-            {FORMAT_OPTIONS.map((f) => (
-              <button
-                key={f.id}
-                className={`format-option ${checkFormat === f.id ? "active" : ""}`}
-                onClick={() => setCheckFormat(f.id)}
-                disabled={checkLoading}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
           <div className="card-actions">
             <button className="btn btn-primary" onClick={handleCheckList} disabled={checkLoading}>
               {checkLoading ? <Loader2 size={16} className="spin" /> : <Check size={16} />}
@@ -705,25 +781,30 @@ export default function Home() {
 
           <div className="starter-lists">
             <span className="starter-label">Or start from a list</span>
-            {["age", "topic"].map((group) => (
-              <div key={group} className="chip-row">
-                {starterLists
-                  .filter((l) => l.group === group)
-                  .map((l) => (
-                    <button
-                      key={l.id}
-                      className={`chip ${openStarterId === l.id ? "active" : ""}`}
-                      onClick={() => setOpenStarterId((prev) => (prev === l.id ? null : l.id))}
-                    >
-                      {(() => {
-                        const Icon = LIST_ICONS[l.id];
-                        return Icon ? <Icon size={14} className="chip-icon" /> : <span aria-hidden="true">{l.emoji}</span>;
-                      })()}
-                      {l.label}
-                    </button>
-                  ))}
-              </div>
-            ))}
+            <div className="chip-row">
+              {(chipsExpanded ? starterLists : starterLists.slice(0, VISIBLE_CHIP_COUNT)).map((l) => (
+                <button
+                  key={l.id}
+                  className={`chip ${openStarterId === l.id ? "active" : ""}`}
+                  onClick={() => setOpenStarterId((prev) => (prev === l.id ? null : l.id))}
+                >
+                  {(() => {
+                    const Icon = LIST_ICONS[l.id];
+                    return Icon ? <Icon size={14} className="chip-icon" /> : <span aria-hidden="true">{l.emoji}</span>;
+                  })()}
+                  {l.label}
+                </button>
+              ))}
+              {starterLists.length > VISIBLE_CHIP_COUNT && (
+                <button
+                  className={`chip chip-more ${chipsExpanded ? "active" : ""}`}
+                  onClick={() => setChipsExpanded((v) => !v)}
+                >
+                  {chipsExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  {chipsExpanded ? "Fewer lists" : `More lists (${starterLists.length - VISIBLE_CHIP_COUNT})`}
+                </button>
+              )}
+            </div>
           </div>
 
           {openStarterId && (
@@ -746,6 +827,7 @@ export default function Home() {
 
           {!checkLoading && checkResults && checkResults.length > 0 && (
             <>
+              <CatalogResultsHeader branchName={branches.find((b) => b.code === branch)?.name || branch} />
               <div className="export-row">
                 <button className="btn btn-secondary" onClick={() => copyResults(checkResults, setCheckCopyLabel)}>
                   <Copy size={16} />
@@ -801,6 +883,15 @@ export default function Home() {
           )}
 
           {recLoading && <SkeletonList count={4} />}
+
+          {!recLoading && recResults && recResults.length > 0 && (
+            <div className="card-actions">
+              <button className="btn btn-secondary" onClick={checkAllRecAvailability} disabled={recAllLoading}>
+                {recAllLoading ? <Loader2 size={16} className="spin" /> : <Library size={16} />}
+                Check all at my branch
+              </button>
+            </div>
+          )}
 
           {!recLoading && recResults && (
             <div className="results-list">
@@ -905,7 +996,7 @@ export default function Home() {
 
               {statsResult && (
                 <div className="stats-card">
-                  <h3>Wishlist Ledger</h3>
+                  <h3>Library Record</h3>
                   {Object.values(statsResult.buckets).map((b) => (
                     <div className="stats-row" key={b.label}>
                       <span className="stats-label">{b.label}</span>
@@ -921,7 +1012,9 @@ export default function Home() {
                   </div>
                   <div className="stats-summary">
                     <span className="buy-it-all">To buy it all: ${statsResult.buyItAll.toFixed(2)}</span>
-                    <span className="saved">Free at the library today: ${statsResult.freeToday.toFixed(2)} saved</span>
+                    <span className="stamp-badge">
+                      Free at the library today &mdash; ${statsResult.freeToday.toFixed(2)} saved
+                    </span>
                   </div>
                 </div>
               )}
@@ -930,6 +1023,7 @@ export default function Home() {
 
               {!wishlistLoading && wishlistResults && (
                 <>
+                  <CatalogResultsHeader branchName={branches.find((b) => b.code === branch)?.name || branch} />
                   <div className="export-row">
                     <button
                       className="btn btn-secondary"
