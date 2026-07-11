@@ -29,15 +29,17 @@ The catalog answers "does the system own it?" Dewey answers "can I walk in Satur
 
 ## Infographic Prompt (paste into GPT / image gen)
 
-> Create a vertical 4:5 infographic for a free web app called "Dewey." — a library book-finding tool. Vintage library nostalgia aesthetic: aged cream paper background (#f4eede), date-stamp red (#b5382e) as the primary accent, stamp-pad blue (#3d5a92) secondary, dark warm-brown ink text (#2b2419). Typewriter-style font for headings (like Special Elite), clean sans-serif for body. Decorative elements: rubber-stamp borders, a library card pocket, index-card ruled lines, a small Dewey-decimal call number sticker. Flat vector illustration style, no photorealism, no gradients.
+> Create a vertical 4:5 infographic for a free web app called "Dewey." — a library book-finding tool. Vintage library nostalgia aesthetic: aged cream paper background (#f4eede), date-stamp red (#b5382e) as the primary accent, stamp-pad blue (#3d5a92) secondary, dark warm-brown ink text (#2b2419). Typewriter-style font for headings (like Special Elite), clean sans-serif for body. Decorative elements: a library card pocket, index-card ruled lines, a small Dewey-decimal call-number sticker. Flat vector illustration style, no photorealism, no gradients.
+>
+> Exactly ONE rubber stamp in the whole image: in the top-right corner, a slightly rotated red rubber stamp reading "ON SHELF" — like a librarian just stamped the page. No other stamps anywhere.
 >
 > Layout top to bottom:
-> 1. Header: the wordmark "Dewey." in typewriter font, dark ink with a red period. Beneath it, in small caps: "YOUR LIBRARY CARD'S SECRET SUPERPOWER"
+> 1. Header: the wordmark "Dewey." in typewriter font, dark ink with a red period (the ON SHELF stamp sits to its right in the corner). Beneath it, in small caps: "YOUR LIBRARY CARD'S SECRET SUPERPOWER"
 > 2. Three numbered steps, each with a small flat icon and one short line:
->    — Step 1 (icon: pasted list/clipboard): "Paste your reading list — or tap a kids' list like Dinosaurs 🦕"
+>    — Step 1 (icon: clipboard with a list): "Paste your reading list — or tap a kids' list"
 >    — Step 2 (icon: classic library building): "Pick your Fulton County branch"
->    — Step 3 (icon: rubber stamp stamping "ON SHELF"): "See what's on the shelf RIGHT NOW"
-> 3. A horizontal strip showing three small book covers with status stamps: one stamped "ON SHELF" in green, one "CHECKED OUT — BACK JUL 24" in red, one "AT 3 OTHER BRANCHES" in blue. Stamps look like real rubber stamps, slightly rotated.
+>    — Step 3 (icon: open book with a checkmark): "See what's on the shelf RIGHT NOW"
+> 3. A horizontal strip of three small flat-vector toddler book covers, generic but instantly evocative (do not reproduce real cover art): a caterpillar on a leaf titled "The Very Hungry Caterpillar", a moonlit green bedroom titled "Goodnight Moon", a red bear titled "Brown Bear, Brown Bear". Under each cover a small mono-font status line in ink: "ON SHELF · PONCE", "BACK JUL 24", "AT 3 BRANCHES" — plain text labels, not stamps.
 > 4. A small callout box styled like a library due-date card: "No login · No app · Free · AI picks books if you don't have a list"
 > 5. Footer in typewriter font: "deweybooks.vercel.app" on a red banner ribbon.
 >
