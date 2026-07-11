@@ -399,6 +399,11 @@ textarea.input-area:focus {
   color: var(--muted);
 }
 
+.settings-hint {
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
 .error-banner {
   background: var(--amber-bg);
   border: 1px solid var(--amber);

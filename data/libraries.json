@@ -1,0 +1,94 @@
+[
+  {
+    "slug": "fulcolibrary",
+    "name": "Fulton County (Atlanta), GA"
+  },
+  {
+    "slug": "seattle",
+    "name": "Seattle, WA"
+  },
+  {
+    "slug": "kcls",
+    "name": "King County, WA"
+  },
+  {
+    "slug": "sno-isle",
+    "name": "Sno-Isle, WA"
+  },
+  {
+    "slug": "sfpl",
+    "name": "San Francisco, CA"
+  },
+  {
+    "slug": "smcl",
+    "name": "San Mateo County, CA"
+  },
+  {
+    "slug": "sccl",
+    "name": "Santa Clara County, CA"
+  },
+  {
+    "slug": "ccclib",
+    "name": "Contra Costa County, CA"
+  },
+  {
+    "slug": "sandiego",
+    "name": "San Diego, CA"
+  },
+  {
+    "slug": "chipublib",
+    "name": "Chicago, IL"
+  },
+  {
+    "slug": "bpl",
+    "name": "Boston, MA"
+  },
+  {
+    "slug": "hclib",
+    "name": "Hennepin County (Minneapolis), MN"
+  },
+  {
+    "slug": "mysapl",
+    "name": "San Antonio, TX"
+  },
+  {
+    "slug": "cmlibrary",
+    "name": "Charlotte Mecklenburg, NC"
+  },
+  {
+    "slug": "pbclibrary",
+    "name": "Palm Beach County, FL"
+  },
+  {
+    "slug": "austin",
+    "name": "Austin, TX"
+  },
+  {
+    "slug": "hcpl",
+    "name": "Harris County, TX"
+  },
+  {
+    "slug": "multcolib",
+    "name": "Multnomah County (Portland), OR"
+  },
+  {
+    "slug": "wccls",
+    "name": "Washington County, OR"
+  },
+  {
+    "slug": "jeffcolibrary",
+    "name": "Jefferson County, CO"
+  },
+  {
+    "slug": "jocolibrary",
+    "name": "Johnson County, KS"
+  },
+  {
+    "slug": "tscpl",
+    "name": "Topeka & Shawnee County, KS"
+  },
+  {
+    "slug": "librarypoint",
+    "name": "Central Rappahannock, VA"
+  }
+]

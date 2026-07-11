@@ -47,14 +47,30 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import branches from "@/data/branches.json";
+import fultonBranches from "@/data/branches.json";
 import starterLists from "@/data/starterLists.json";
+import libraries from "@/data/libraries.json";
 import { parseBookList } from "@/lib/parseBookList";
 
 const THEME_KEY = "dewey-theme";
 const BRANCH_KEY = "dewey-branch";
+const LIBRARY_KEY = "dewey-library";
 const WISHLIST_KEY = "dewey-wishlist";
+const DEFAULT_LIBRARY = "fulcolibrary";
 const DEFAULT_BRANCH = "PONCE";
+
+function branchStorageKey(library) {
+  return `dewey-branch-${library}`;
+}
+
+// "Fulton County (Atlanta), GA" -> "Atlanta"; "Seattle, WA" -> "Seattle".
+function shortLibraryName(slug) {
+  const lib = libraries.find((l) => l.slug === slug);
+  if (!lib) return slug;
+  const paren = lib.name.match(/\(([^)]+)\)/);
+  if (paren) return paren[1];
+  return lib.name.split(",")[0].trim();
+}
 
 function loadJSON(key, fallback) {
   if (typeof window === "undefined") return fallback;
@@ -413,7 +429,12 @@ function StarterListPanel({ list, listText, onAdd, onClose }) {
 
 export default function Home() {
   const [theme, setTheme] = useState("light");
+  const [library, setLibrary] = useState(DEFAULT_LIBRARY);
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
+  const [branchOptions, setBranchOptions] = useState(
+    fultonBranches.map((b) => ({ code: b.code, label: b.name }))
+  );
+  const [branchesLoading, setBranchesLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("check");
   const [wishlist, setWishlist] = useState([]);
   const [hydrated, setHydrated] = useState(false);
@@ -455,7 +476,8 @@ export default function Home() {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       setTheme(prefersDark ? "dark" : "light");
     }
-    setBranch(loadJSON(BRANCH_KEY, DEFAULT_BRANCH));
+    const storedLibrary = loadJSON(LIBRARY_KEY, DEFAULT_LIBRARY);
+    setLibrary(libraries.some((l) => l.slug === storedLibrary) ? storedLibrary : DEFAULT_LIBRARY);
     setWishlist(loadJSON(WISHLIST_KEY, []));
     setHydrated(true);
   }, []);
@@ -468,8 +490,49 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated) return;
-    saveJSON(BRANCH_KEY, branch);
-  }, [branch, hydrated]);
+    saveJSON(LIBRARY_KEY, library);
+  }, [library, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveJSON(branchStorageKey(library), branch);
+  }, [branch, library, hydrated]);
+
+  // Load the branch list whenever the library system changes (including the
+  // initial hydration): Fulton uses the static bundled list, everything else
+  // fetches the dynamic facet list from /api/branches.
+  useEffect(() => {
+    if (!hydrated) return;
+
+    if (library === DEFAULT_LIBRARY) {
+      const opts = fultonBranches.map((b) => ({ code: b.code, label: b.name }));
+      setBranchOptions(opts);
+      const stored = loadJSON(branchStorageKey(library), loadJSON(BRANCH_KEY, DEFAULT_BRANCH));
+      setBranch(opts.some((o) => o.code === stored) ? stored : opts[0]?.code || DEFAULT_BRANCH);
+      return;
+    }
+
+    let cancelled = false;
+    setBranchesLoading(true);
+    setBranchOptions([]);
+    fetch(`/api/branches?library=${encodeURIComponent(library)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const opts = data.branches || [];
+        setBranchOptions(opts);
+        const stored = loadJSON(branchStorageKey(library), null);
+        const next = opts.some((o) => o.code === stored) ? stored : opts[0]?.code;
+        if (next) setBranch(next);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setBranchesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [library, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -503,7 +566,7 @@ export default function Home() {
     const res = await fetch("/api/availability", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ books, branch, format }),
+      body: JSON.stringify({ books, branch, format, library }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Availability check failed");
@@ -675,7 +738,7 @@ export default function Home() {
           </h1>
           <p className="tagline">Find your next read on a Fulton County shelf</p>
           <button className="settings-summary" onClick={() => setSettingsOpen((v) => !v)}>
-            {branch} &middot; {checkFormat.toUpperCase()}
+            {shortLibraryName(library)} &middot; {branch} &middot; {checkFormat.toUpperCase()}
           </button>
         </div>
         <div className="header-actions" ref={settingsRef}>
@@ -703,6 +766,27 @@ export default function Home() {
                 </button>
               </div>
               <div className="settings-field">
+                <label htmlFor="library-select">Library system</label>
+                <div className="select-wrap">
+                  <Library size={16} className="select-icon" />
+                  <select
+                    id="library-select"
+                    className="branch-select"
+                    value={library}
+                    onChange={(e) => setLibrary(e.target.value)}
+                  >
+                    {libraries.map((l) => (
+                      <option key={l.slug} value={l.slug}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="hint settings-hint">
+                  {libraries.length} systems on BiblioCommons — availability data is live from each catalog.
+                </p>
+              </div>
+              <div className="settings-field">
                 <label htmlFor="branch-select">Your branch</label>
                 <div className="select-wrap">
                   <Library size={16} className="select-icon" />
@@ -711,14 +795,16 @@ export default function Home() {
                     className="branch-select"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
+                    disabled={branchesLoading || branchOptions.length === 0}
                   >
-                    {branches.map((b) => (
+                    {branchOptions.map((b) => (
                       <option key={b.code} value={b.code}>
-                        {b.name}
+                        {b.label}
                       </option>
                     ))}
                   </select>
                 </div>
+                {branchesLoading && <p className="hint settings-hint">Loading branches…</p>}
               </div>
               <div className="settings-field">
                 <label>Format</label>
@@ -827,7 +913,7 @@ export default function Home() {
 
           {!checkLoading && checkResults && checkResults.length > 0 && (
             <>
-              <CatalogResultsHeader branchName={branches.find((b) => b.code === branch)?.name || branch} />
+              <CatalogResultsHeader branchName={branchOptions.find((b) => b.code === branch)?.label || branch} />
               <div className="export-row">
                 <button className="btn btn-secondary" onClick={() => copyResults(checkResults, setCheckCopyLabel)}>
                   <Copy size={16} />
@@ -1023,7 +1109,7 @@ export default function Home() {
 
               {!wishlistLoading && wishlistResults && (
                 <>
-                  <CatalogResultsHeader branchName={branches.find((b) => b.code === branch)?.name || branch} />
+                  <CatalogResultsHeader branchName={branchOptions.find((b) => b.code === branch)?.label || branch} />
                   <div className="export-row">
                     <button
                       className="btn btn-secondary"

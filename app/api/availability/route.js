@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { checkBookAvailability } from "@/lib/bibliocommons";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { chatCompletion, extractJsonArray } from "@/lib/llm";
+import libraries from "@/data/libraries.json";
 
 const MAX_BOOKS = 25;
 const CONCURRENCY = 4;
@@ -48,7 +49,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { books, branch, format = "print" } = body || {};
+  const { books, branch, format = "print", library = "fulcolibrary" } = body || {};
 
   if (!Array.isArray(books) || books.length === 0) {
     return NextResponse.json({ error: "books must be a non-empty array" }, { status: 400 });
@@ -58,6 +59,9 @@ export async function POST(request) {
   }
   if (!FORMATS.includes(format)) {
     return NextResponse.json({ error: "Invalid format" }, { status: 400 });
+  }
+  if (!libraries.some((l) => l.slug === library)) {
+    return NextResponse.json({ error: "Invalid library" }, { status: 400 });
   }
   if (books.length > MAX_BOOKS) {
     return NextResponse.json(
@@ -79,7 +83,7 @@ export async function POST(request) {
     : validBooks;
 
   const results = await mapWithConcurrency(normalized, CONCURRENCY, (book) =>
-    checkBookAvailability(book, branch, format)
+    checkBookAvailability(book, branch, format, library)
   );
 
   return NextResponse.json({ results });
