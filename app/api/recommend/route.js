@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { chatCompletion, extractJsonArray } from "@/lib/llm";
 
 const MAX_PROMPT_LENGTH = 500;
-const MODEL = "anthropic/claude-haiku-4.5";
 
 const SYSTEM_PROMPT = `You are Book Scout's recommendation engine. You ONLY discuss and recommend books.
 If the user's request is not about books or reading preferences, politely refuse and ask them to
@@ -13,16 +13,6 @@ no prose before or after. Each item must be an object with exactly these keys:
 "title" (string), "author" (string), "year" (string or number), "oneLiner" (a punchy one-sentence
 description, max ~20 words). Do not recommend the same book twice. Do not wrap the array in an
 object or add markdown formatting — return the raw JSON array only.`;
-
-function extractJsonArray(text) {
-  const match = text.match(/\[[\s\S]*\]/);
-  if (!match) return null;
-  try {
-    return JSON.parse(match[0]);
-  } catch {
-    return null;
-  }
-}
 
 function getClientIp(request) {
   const fwd = request.headers.get("x-forwarded-for");
@@ -70,43 +60,18 @@ export async function POST(request) {
     return NextResponse.json({ error: message }, { status: 429 });
   }
 
-  let completion;
+  let content;
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1200,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("OpenRouter error:", res.status, errText);
-      return NextResponse.json(
-        { error: "The recommendation engine is having trouble — try again shortly." },
-        { status: 502 }
-      );
-    }
-
-    completion = await res.json();
+    const result = await chatCompletion({ system: SYSTEM_PROMPT, user: prompt });
+    content = result.content;
   } catch (err) {
-    console.error("OpenRouter fetch failed:", err);
+    console.error("LLM call failed:", err?.message);
     return NextResponse.json(
       { error: "The recommendation engine is having trouble — try again shortly." },
       { status: 502 }
     );
   }
 
-  const content = completion?.choices?.[0]?.message?.content || "";
   const recs = extractJsonArray(content);
 
   if (!Array.isArray(recs) || recs.length === 0) {
