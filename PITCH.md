@@ -1,6 +1,6 @@
 # Dewey — Positioning & Friend Pitch
 
-**Live:** https://bookscout-jet.vercel.app
+**Live:** https://deweybooks.vercel.app
 
 ## Positioning
 
@@ -16,16 +16,16 @@ The catalog answers "does the system own it?" Dewey answers "can I walk in Satur
 ## Friend Pitches (copy-paste)
 
 **Short text (the default):**
-> Made a thing: paste your want-to-read list, pick your Fulton library branch, and it tells you what's literally on the shelf right now. Also does AI recs if you don't have a list. No login, just works: https://bookscout-jet.vercel.app
+> Made a thing: paste your want-to-read list, pick your Fulton library branch, and it tells you what's literally on the shelf right now. Also does AI recs if you don't have a list. No login, just works: https://deweybooks.vercel.app
 
 **Parent version:**
-> If you ever hit the library with the kids and strike out — I made a tool. Tap "Dinosaurs" or "Ages 3–5" and it shows which classics are sitting on the shelf at your branch before you leave the house. https://bookscout-jet.vercel.app
+> If you ever hit the library with the kids and strike out — I made a tool. Tap "Dinosaurs" or "Ages 3–5" and it shows which classics are sitting on the shelf at your branch before you leave the house. https://deweybooks.vercel.app
 
 **Book-club version:**
-> Before we pick the next book — this checks how many copies are actually available across Fulton branches so we all can actually get it: https://bookscout-jet.vercel.app
+> Before we pick the next book — this checks how many copies are actually available across Fulton branches so we all can actually get it: https://deweybooks.vercel.app
 
 **Group-chat version (playful):**
-> Built a librarian robot 🤖📚 It knows what's on the shelf at every Fulton branch. Tell it your vibe, it hands you 8 books and tells you which ones you can grab today. Free, no signup: https://bookscout-jet.vercel.app
+> Built a librarian robot 🤖📚 It knows what's on the shelf at every Fulton branch. Tell it your vibe, it hands you 8 books and tells you which ones you can grab today. Free, no signup: https://deweybooks.vercel.app
 
 ## Infographic Prompt (paste into GPT / image gen)
 
@@ -39,6 +39,6 @@ The catalog answers "does the system own it?" Dewey answers "can I walk in Satur
 >    — Step 3 (icon: rubber stamp stamping "ON SHELF"): "See what's on the shelf RIGHT NOW"
 > 3. A horizontal strip showing three small book covers with status stamps: one stamped "ON SHELF" in green, one "CHECKED OUT — BACK JUL 24" in red, one "AT 3 OTHER BRANCHES" in blue. Stamps look like real rubber stamps, slightly rotated.
 > 4. A small callout box styled like a library due-date card: "No login · No app · Free · AI picks books if you don't have a list"
-> 5. Footer in typewriter font: "bookscout-jet.vercel.app" on a red banner ribbon.
+> 5. Footer in typewriter font: "deweybooks.vercel.app" on a red banner ribbon.
 >
 > Keep ALL text exactly as written above, high contrast, legible at phone size. Charming, warm, slightly retro — like a beloved neighborhood library made a startup.
