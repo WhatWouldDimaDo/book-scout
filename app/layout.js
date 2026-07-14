@@ -22,8 +22,19 @@ const courierPrime = Courier_Prime({
 });
 
 export const metadata = {
+  metadataBase: new URL("https://deweybooks.vercel.app"),
   title: "Dewey",
   description: "Find your next read on a Fulton County shelf",
+  openGraph: {
+    title: "Dewey",
+    description: "Find your next read on a Fulton County shelf",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dewey",
+    description: "Find your next read on a Fulton County shelf",
+  },
 };
 
 export const viewport = {
