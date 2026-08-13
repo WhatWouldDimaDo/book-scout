@@ -58,6 +58,7 @@ const THEME_KEY = "dewey-theme";
 const BRANCH_KEY = "dewey-branch";
 const LIBRARY_KEY = "dewey-library";
 const WISHLIST_KEY = "dewey-wishlist";
+const FORMAT_KEY = "dewey-format";
 const DEFAULT_LIBRARY = "fulcolibrary";
 const DEFAULT_BRANCH = "PONCE";
 
@@ -127,10 +128,12 @@ const STATUS_CONFIG = {
 };
 
 const FORMAT_OPTIONS = [
+  { id: "all", label: "All" },
   { id: "print", label: "Print" },
   { id: "ebook", label: "eBook" },
   { id: "audiobook", label: "Audiobook" },
 ];
+const VALID_FORMATS = new Set(FORMAT_OPTIONS.map((option) => option.id));
 
 const VISIBLE_CHIP_COUNT = 6;
 const FEATURED_STARTER_LIST_IDS = [
@@ -460,7 +463,7 @@ export default function Home() {
 
   // Check a List
   const [listText, setListText] = useState("");
-  const [checkFormat, setCheckFormat] = useState("print");
+  const [checkFormat, setCheckFormat] = useState("all");
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
   const [checkError, setCheckError] = useState(null);
@@ -499,6 +502,8 @@ export default function Home() {
     }
     const storedLibrary = loadJSON(LIBRARY_KEY, DEFAULT_LIBRARY);
     setLibrary(libraries.some((l) => l.slug === storedLibrary) ? storedLibrary : DEFAULT_LIBRARY);
+    const storedFormat = loadJSON(FORMAT_KEY, "all");
+    setCheckFormat(VALID_FORMATS.has(storedFormat) ? storedFormat : "all");
     setWishlist(loadJSON(WISHLIST_KEY, []));
     setHydrated(true);
   }, []);
@@ -514,6 +519,11 @@ export default function Home() {
     if (!hydrated) return;
     saveJSON(LIBRARY_KEY, library);
   }, [library, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveJSON(FORMAT_KEY, checkFormat);
+  }, [checkFormat, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -586,7 +596,7 @@ export default function Home() {
     setWishlist((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  async function runAvailability(books, format = "print", searchMode = "list") {
+  async function runAvailability(books, format = "all", searchMode = "list") {
     const eventProperties = {
       search_mode: searchMode,
       selected_branch: branch,
@@ -700,7 +710,7 @@ export default function Home() {
     try {
       const results = await runAvailability(
         [{ title: rec.title, author: rec.author }],
-        "print",
+        checkFormat,
         "recommendation_single"
       );
       setRecAvailability((prev) => ({ ...prev, [index]: { loading: false, result: results[0] } }));
@@ -715,7 +725,7 @@ export default function Home() {
     setRecAvailability(Object.fromEntries(recResults.map((_, i) => [i, { loading: true }])));
     try {
       const books = recResults.map((rec) => ({ title: rec.title, author: rec.author }));
-      const results = await runAvailability(books, "print", "recommendations");
+      const results = await runAvailability(books, checkFormat, "recommendations");
       setRecAvailability(Object.fromEntries(results.map((result, i) => [i, { loading: false, result }])));
     } catch {
       setRecAvailability(Object.fromEntries(recResults.map((_, i) => [i, { loading: false, error: true }])));
@@ -731,7 +741,7 @@ export default function Home() {
     try {
       const results = await runAvailability(
         wishlist.slice(0, 25).map((b) => ({ title: b.title, author: b.author })),
-        "print",
+        checkFormat,
         "wishlist"
       );
       setWishlistResults(results);
@@ -749,7 +759,7 @@ export default function Home() {
     try {
       const books = wishlist.slice(0, 25).map((b) => ({ title: b.title, author: b.author }));
       const [availResults, priceResults] = await Promise.all([
-        runAvailability(books, "print", "wishlist_pricing"),
+        runAvailability(books, checkFormat, "wishlist_pricing"),
         fetchPrices(books),
       ]);
       setWishlistResults(availResults);
@@ -882,6 +892,27 @@ export default function Home() {
                 </div>
                 {branchesLoading && <p className="hint settings-hint">Loading branches…</p>}
               </div>
+              <div className="settings-field">
+                <label htmlFor="format-select">Format</label>
+                <div className="select-wrap">
+                  <BookMarked size={16} className="select-icon" />
+                  <select
+                    id="format-select"
+                    className="branch-select"
+                    value={checkFormat}
+                    onChange={(e) => setCheckFormat(e.target.value)}
+                  >
+                    {FORMAT_OPTIONS.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="hint settings-hint">
+                  Applies to list, recommendation, and wishlist availability checks.
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -910,21 +941,6 @@ export default function Home() {
 
       {activeTab === "check" && (
         <section className="panel">
-          <div className="check-format-field">
-            <span className="check-format-label">Format</span>
-            <div className="format-selector" role="group" aria-label="Book format">
-              {FORMAT_OPTIONS.map((f) => (
-                <button
-                  key={f.id}
-                  className={`format-option ${checkFormat === f.id ? "active" : ""}`}
-                  onClick={() => setCheckFormat(f.id)}
-                  aria-pressed={checkFormat === f.id}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
           <textarea
             className="input-area"
             placeholder={

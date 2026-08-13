@@ -847,57 +847,6 @@ textarea.input-area:focus {
   gap: 8px;
 }
 
-/* Format selector */
-
-.check-format-field {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.check-format-label {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.format-selector {
-  display: flex;
-  width: min(100%, 300px);
-  gap: 4px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 4px;
-}
-
-.format-option {
-  flex: 1;
-  text-align: center;
-  padding: 8px 8px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.format-option.active {
-  background: var(--accent2);
-  color: var(--accent-text);
-}
-
-.format-option:not(.active):hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
-
 /* Export row */
 
 .export-row {

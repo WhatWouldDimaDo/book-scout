@@ -6,7 +6,7 @@ import libraries from "@/data/libraries.json";
 
 const MAX_BOOKS = 25;
 const CONCURRENCY = 4;
-const FORMATS = ["print", "ebook", "audiobook"];
+const FORMATS = ["all", "print", "ebook", "audiobook"];
 
 const NORMALIZE_PROMPT = `You clean up book lists for a library catalog search. Given a JSON array of
 {title, author} entries (possibly with typos, partial titles, or missing authors), return ONLY a JSON
@@ -49,7 +49,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { books, branch, format = "print", library = "fulcolibrary" } = body || {};
+  const { books, branch, format = "all", library = "fulcolibrary" } = body || {};
 
   if (!Array.isArray(books) || books.length === 0) {
     return NextResponse.json({ error: "books must be a non-empty array" }, { status: 400 });
