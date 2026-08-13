@@ -61,4 +61,4 @@ Please report vulnerabilities privately as described in [SECURITY.md](SECURITY.m
 
 Built by [Dima Perkis](https://dimadimadima.com/projects/dewey).
 
-The repository is publicly readable for learning and review, but no reuse license is currently granted. See [LICENSE](LICENSE).
+The source is available under the MIT License. See [LICENSE](LICENSE).
