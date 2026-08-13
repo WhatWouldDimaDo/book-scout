@@ -45,6 +45,7 @@ import {
   Send,
   ShoppingBag,
   Settings,
+  Search,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -912,7 +913,7 @@ export default function Home() {
           <textarea
             className="input-area"
             placeholder={
-              'One book per line:\nLonesome Dove by Larry McMurtry\nAtomic Habits — James Clear\nThe Great Gatsby'
+              'Try entering some books (one per line):\nPat the Bunny by Dorothy Kunhardt\nThe Very Hungry Caterpillar by Eric Carle\nFrog and Toad Are Friends by Arnold Lobel'
             }
             value={listText}
             onChange={(e) => setListText(e.target.value)}
@@ -920,8 +921,8 @@ export default function Home() {
 
           <div className="card-actions">
             <button className="btn btn-primary" onClick={handleCheckList} disabled={checkLoading}>
-              {checkLoading ? <Loader2 size={16} className="spin" /> : <Check size={16} />}
-              Check
+              {checkLoading ? <Loader2 size={16} className="spin" /> : <Search size={16} />}
+              Search
             </button>
             <span className="hint">Up to 25 books per check</span>
           </div>
@@ -1009,7 +1010,7 @@ export default function Home() {
         <section className="panel">
           <textarea
             className="input-area"
-            placeholder="Tell us what you love… e.g. slow-burn literary fiction with unreliable narrators, or fast sci-fi with found families."
+            placeholder={'Try asking for recommendations:\nFunny bedtime books for a 4-year-old\nEarly chapter books about friendship for a 7-year-old'}
             value={recPrompt}
             onChange={(e) => setRecPrompt(e.target.value)}
             maxLength={500}

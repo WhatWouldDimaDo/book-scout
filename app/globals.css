@@ -318,7 +318,7 @@ select.branch-select:focus {
 
 textarea.input-area {
   width: 100%;
-  min-height: 140px;
+  min-height: 108px;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
