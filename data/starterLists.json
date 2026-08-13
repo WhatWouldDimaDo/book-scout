@@ -1358,5 +1358,59 @@
         "author": "Kekla Magoon"
       }
     ]
+  },
+  {
+    "id": "adult-fiction",
+    "label": "Adult Fiction",
+    "emoji": "📕",
+    "group": "adult",
+    "books": [
+      { "title": "Lonesome Dove", "author": "Larry McMurtry" },
+      { "title": "Beloved", "author": "Toni Morrison" },
+      { "title": "The Night Circus", "author": "Erin Morgenstern" },
+      { "title": "The Vanishing Half", "author": "Brit Bennett" },
+      { "title": "Project Hail Mary", "author": "Andy Weir" },
+      { "title": "The Dutch House", "author": "Ann Patchett" },
+      { "title": "Demon Copperhead", "author": "Barbara Kingsolver" },
+      { "title": "Tomorrow, and Tomorrow, and Tomorrow", "author": "Gabrielle Zevin" },
+      { "title": "Lessons in Chemistry", "author": "Bonnie Garmus" },
+      { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald" }
+    ]
+  },
+  {
+    "id": "mystery-thrillers",
+    "label": "Mystery & Thrillers",
+    "emoji": "🔎",
+    "group": "adult",
+    "books": [
+      { "title": "The Thursday Murder Club", "author": "Richard Osman" },
+      { "title": "Gone Girl", "author": "Gillian Flynn" },
+      { "title": "The Guest List", "author": "Lucy Foley" },
+      { "title": "The Girl with the Dragon Tattoo", "author": "Stieg Larsson" },
+      { "title": "In the Woods", "author": "Tana French" },
+      { "title": "The Silent Patient", "author": "Alex Michaelides" },
+      { "title": "The Dry", "author": "Jane Harper" },
+      { "title": "Big Little Lies", "author": "Liane Moriarty" },
+      { "title": "The Woman in Cabin 10", "author": "Ruth Ware" },
+      { "title": "The Cuckoo's Calling", "author": "Robert Galbraith" }
+    ]
+  },
+  {
+    "id": "memoir-nonfiction",
+    "label": "Memoir & Nonfiction",
+    "emoji": "📝",
+    "group": "adult",
+    "books": [
+      { "title": "Educated", "author": "Tara Westover" },
+      { "title": "The Glass Castle", "author": "Jeannette Walls" },
+      { "title": "Between the World and Me", "author": "Ta-Nehisi Coates" },
+      { "title": "Born a Crime", "author": "Trevor Noah" },
+      { "title": "Crying in H Mart", "author": "Michelle Zauner" },
+      { "title": "The Wager", "author": "David Grann" },
+      { "title": "Braiding Sweetgrass", "author": "Robin Wall Kimmerer" },
+      { "title": "Atomic Habits", "author": "James Clear" },
+      { "title": "The Warmth of Other Suns", "author": "Isabel Wilkerson" },
+      { "title": "Maybe You Should Talk to Someone", "author": "Lori Gottlieb" }
+    ]
   }
 ]

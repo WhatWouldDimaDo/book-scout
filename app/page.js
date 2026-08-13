@@ -114,6 +114,9 @@ const LIST_ICONS = {
   "abc-counting": Type,
   "fairy-tales-princesses": Castle,
   sports: Volleyball,
+  "adult-fiction": BookMarked,
+  "mystery-thrillers": Search,
+  "memoir-nonfiction": Bookmark,
 };
 
 const STATUS_CONFIG = {
@@ -130,6 +133,17 @@ const FORMAT_OPTIONS = [
 ];
 
 const VISIBLE_CHIP_COUNT = 6;
+const FEATURED_STARTER_LIST_IDS = [
+  "ages-3-5",
+  "adult-fiction",
+  "ages-6-8",
+  "mystery-thrillers",
+  "ages-9-12",
+  "memoir-nonfiction",
+];
+const FEATURED_STARTER_LISTS = FEATURED_STARTER_LIST_IDS
+  .map((id) => starterLists.find((list) => list.id === id))
+  .filter(Boolean);
 
 function formatDueDate(dueDate) {
   if (!dueDate) return null;
@@ -930,7 +944,7 @@ export default function Home() {
           <div className="starter-lists">
             <span className="starter-label">Or start from a list</span>
             <div className="chip-row">
-              {(chipsExpanded ? starterLists : starterLists.slice(0, VISIBLE_CHIP_COUNT)).map((l) => (
+              {(chipsExpanded ? starterLists : FEATURED_STARTER_LISTS).map((l) => (
                 <button
                   key={l.id}
                   className={`chip ${openStarterId === l.id ? "active" : ""}`}
