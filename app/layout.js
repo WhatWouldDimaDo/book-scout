@@ -23,17 +23,34 @@ const courierPrime = Courier_Prime({
 
 export const metadata = {
   metadataBase: new URL("https://deweybooks.vercel.app"),
-  title: "Dewey",
-  description: "Find your next read on a Fulton County shelf",
+  title: "Dewey — Find Fulton County Library Books on the Shelf",
+  description:
+    "Paste a reading list or ask for recommendations. Dewey checks the Fulton County Library catalog for live availability and call numbers at your branch.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Dewey",
-    description: "Find your next read on a Fulton County shelf",
+    title: "Dewey — Find Books on a Fulton County Library Shelf",
+    description:
+      "Paste a reading list or ask for recommendations, then see live availability and call numbers for your Fulton County branch.",
+    url: "/",
+    siteName: "Dewey",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Dewey checks reading lists against live Fulton County Library shelf availability",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Dewey",
-    description: "Find your next read on a Fulton County shelf",
+    title: "Dewey — Find Books on a Fulton County Library Shelf",
+    description:
+      "Paste a reading list or ask for recommendations, then see live availability and call numbers for your Fulton County branch.",
+    images: ["/opengraph-image.png"],
   },
 };
 

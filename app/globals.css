@@ -464,6 +464,13 @@ textarea.input-area:focus {
   align-items: center;
 }
 
+.recommendation-privacy {
+  margin: -2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .one-liner {
   font-size: 13px;
   color: var(--text);
@@ -981,4 +988,31 @@ textarea.input-area:focus {
   color: var(--accent);
   border-color: var(--accent);
   background: var(--amber-bg);
+}
+
+.site-credit {
+  display: flex;
+  justify-content: center;
+  padding: 28px 0 8px;
+  border-top: 3px double var(--border);
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.site-credit a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.site-credit a:hover,
+.site-credit a:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }

@@ -1,95 +1,49 @@
-# Book Scout — Deployment
+# Dewey Deployment Guide
 
-## Deploy to Vercel (First Time)
+Dewey deploys from the canonical GitHub repository to the existing Vercel project named `bookscout`.
+
+## Link a local checkout
+
+From the repository root:
 
 ```bash
-cd /path/to/book-scout
+vercel link --project bookscout
+```
 
-# Link the project (creates new Vercel project)
+Linking creates a local ignored `.vercel/` directory. Confirm the selected project before continuing.
+
+## Environment variables
+
+Configure these in Vercel rather than committing values:
+
+- `OPENROUTER_API_KEY` — server-only credential for recommendation and normalization requests.
+- `NEXT_PUBLIC_POSTHOG_KEY` — optional public PostHog project token for explicit funnel events.
+
+For local development, copy `.env.example` to the ignored `.env.local` file and add only the values needed for the test. Never print, screenshot, or commit environment values.
+
+## Cost and abuse controls
+
+Use a dedicated Dewey OpenRouter key and set the strongest available provider-side monthly budget, per-request limit, and alerts. The current in-memory limiter is prototype friction; it resets across deployments and instances and is not a durable spending boundary.
+
+Before a broad public launch, add durable abuse protection or confirm that the provider-enforced hard cap is sufficient for the intended traffic.
+
+## Build and preview
+
+```bash
+npm ci
+npm run build
 vercel
-
-# When prompted:
-# - Project name: book-scout (or similar)
-# - Framework: Next.js
-# - Deploy to existing project: No (first time)
-
-# Set environment variable for OpenRouter API key
-vercel env add OPENROUTER_API_KEY production
-
-# When prompted, paste your OpenRouter API key from https://openrouter.ai/keys
-
-# Deploy to production
-vercel --prod
 ```
 
-Vercel will return a production URL. Share this URL with friends.
+Review the preview URL, exact Git diff, mobile flow, metadata, and analytics before production deployment.
 
----
+## Production
 
-## Environment Variables
+Production deploys normally follow a reviewed merge to `main`. Do not use an ad hoc production deploy to bypass repository review.
 
-- **`OPENROUTER_API_KEY`** (production only) — Authenticate with OpenRouter for Claude Haiku recommendations. Get key from https://openrouter.ai/keys.
+## Operational checks
 
----
-
-## Built-in Guardrails
-
-### Rate Limiting (OpenRouter)
-- **10 recs/hour per IP** — prevents abuse from single user spamming recommendations.
-- **200 recs/day global** — hard cap across all users.
-
-**Action:** If hitting limits, add exponential backoff client-side or cap UI recommendations to 3 per day per session.
-
-### Book Availability Limits (BiblioCommons Gateway)
-- **25 books max per request** — Fulton County Library API constraint. Paste-list feature splits large lists into chunks.
-
-**Action:** Add warning if user pastes 26+ ISBNs. Auto-paginate or queue remaining requests.
-
-### OpenRouter Spend Limits
-Before sharing the live URL with friends, **set a hard cap on OpenRouter dashboard:**
-
-1. Visit https://openrouter.ai/account/billing
-2. Under "Spend Limits," set cap to **$5/month** (or lower if sensitive).
-3. Set limit to **Limit per request** = $0.05 (kills runaway calls).
-
-This prevents surprise bills if a friend loops the recommendation endpoint.
-
----
-
-## Subsequent Deploys
-
-```bash
-cd /path/to/book-scout
-
-# Deploy to production (env vars already set)
-vercel --prod
-```
-
----
-
-## Debugging
-
-- **OpenRouter errors:** Check API key in `vercel env ls` and compare to https://openrouter.ai/keys.
-- **BiblioCommons 500s:** Gateway may be down. Check health via `curl -s https://gateway.bibliocommons.com/` (no auth needed).
-- **Vercel logs:** `vercel logs --prod` streams production logs.
-
----
-
-## Rollback
-
-```bash
-vercel rollback --prod
-```
-
----
-
-## Local Development
-
-```bash
-cd /path/to/book-scout
-
-# For local testing of OpenRouter integration:
-OPENROUTER_API_KEY=<your-key> npm run dev
-```
-
-Verify at `http://localhost:3000`.
+- Recommendation failures: confirm the environment-variable name and inspect redacted Vercel logs.
+- Availability failures: verify the BiblioCommons gateway and the isolated adapter in `lib/bibliocommons.js`.
+- Analytics failures: confirm `NEXT_PUBLIC_POSTHOG_KEY` is present and verify only the documented event names and non-sensitive properties.
+- Rollback: use the Vercel dashboard or `vercel rollback` after identifying the intended deployment.

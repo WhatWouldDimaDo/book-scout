@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { initializeDeweyAnalytics, trackDeweyEvent } from "@/lib/analytics";
 import {
   Library,
   Sparkles,
@@ -469,6 +470,11 @@ export default function Home() {
   const [statsResult, setStatsResult] = useState(null);
 
   useEffect(() => {
+    initializeDeweyAnalytics();
+  }, []);
+
+  /* eslint-disable react-hooks/set-state-in-effect -- client-only preferences are restored after hydration */
+  useEffect(() => {
     const storedTheme = loadJSON(THEME_KEY, null);
     if (storedTheme) {
       setTheme(storedTheme);
@@ -481,6 +487,7 @@ export default function Home() {
     setWishlist(loadJSON(WISHLIST_KEY, []));
     setHydrated(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!hydrated) return;
@@ -506,6 +513,8 @@ export default function Home() {
 
     if (library === DEFAULT_LIBRARY) {
       const opts = fultonBranches.map((b) => ({ code: b.code, label: b.name }));
+      // Branch options intentionally synchronize with the selected library.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBranchOptions(opts);
       const stored = loadJSON(branchStorageKey(library), loadJSON(BRANCH_KEY, DEFAULT_BRANCH));
       setBranch(opts.some((o) => o.code === stored) ? stored : opts[0]?.code || DEFAULT_BRANCH);
@@ -562,15 +571,40 @@ export default function Home() {
     setWishlist((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  async function runAvailability(books, format = "print") {
-    const res = await fetch("/api/availability", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ books, branch, format, library }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Availability check failed");
-    return data.results;
+  async function runAvailability(books, format = "print", searchMode = "list") {
+    const eventProperties = {
+      search_mode: searchMode,
+      selected_branch: branch,
+      library_system: library,
+      format,
+      book_count: books.length,
+    };
+
+    trackDeweyEvent("dewey_search_started", eventProperties);
+
+    try {
+      const res = await fetch("/api/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ books, branch, format, library }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Availability check failed");
+
+      trackDeweyEvent("dewey_search_completed", {
+        ...eventProperties,
+        success: true,
+        result_count: data.results.length,
+      });
+      return data.results;
+    } catch (error) {
+      trackDeweyEvent("dewey_search_completed", {
+        ...eventProperties,
+        success: false,
+        result_count: 0,
+      });
+      throw error;
+    }
   }
 
   async function fetchPrices(books) {
@@ -595,7 +629,7 @@ export default function Home() {
     setCheckError(null);
     setCheckResults(null);
     try {
-      const results = await runAvailability(books.slice(0, 25), checkFormat);
+      const results = await runAvailability(books.slice(0, 25), checkFormat, "list");
       setCheckResults(results);
     } catch (err) {
       setCheckError(err.message);
@@ -621,6 +655,7 @@ export default function Home() {
     setRecError(null);
     setRecResults(null);
     setRecAvailability({});
+    trackDeweyEvent("dewey_recommendation_started");
     try {
       const res = await fetch("/api/recommend", {
         method: "POST",
@@ -630,8 +665,16 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't get recommendations");
       setRecResults(data.results);
+      trackDeweyEvent("dewey_recommendation_completed", {
+        success: true,
+        recommendation_count: data.results.length,
+      });
     } catch (err) {
       setRecError(err.message);
+      trackDeweyEvent("dewey_recommendation_completed", {
+        success: false,
+        recommendation_count: 0,
+      });
     } finally {
       setRecLoading(false);
     }
@@ -640,7 +683,11 @@ export default function Home() {
   async function checkRecAvailability(index, rec) {
     setRecAvailability((prev) => ({ ...prev, [index]: { loading: true } }));
     try {
-      const results = await runAvailability([{ title: rec.title, author: rec.author }]);
+      const results = await runAvailability(
+        [{ title: rec.title, author: rec.author }],
+        "print",
+        "recommendation_single"
+      );
       setRecAvailability((prev) => ({ ...prev, [index]: { loading: false, result: results[0] } }));
     } catch {
       setRecAvailability((prev) => ({ ...prev, [index]: { loading: false, error: true } }));
@@ -653,7 +700,7 @@ export default function Home() {
     setRecAvailability(Object.fromEntries(recResults.map((_, i) => [i, { loading: true }])));
     try {
       const books = recResults.map((rec) => ({ title: rec.title, author: rec.author }));
-      const results = await runAvailability(books);
+      const results = await runAvailability(books, "print", "recommendations");
       setRecAvailability(Object.fromEntries(results.map((result, i) => [i, { loading: false, result }])));
     } catch {
       setRecAvailability(Object.fromEntries(recResults.map((_, i) => [i, { loading: false, error: true }])));
@@ -668,7 +715,9 @@ export default function Home() {
     setWishlistResults(null);
     try {
       const results = await runAvailability(
-        wishlist.slice(0, 25).map((b) => ({ title: b.title, author: b.author }))
+        wishlist.slice(0, 25).map((b) => ({ title: b.title, author: b.author })),
+        "print",
+        "wishlist"
       );
       setWishlistResults(results);
     } catch {
@@ -685,7 +734,7 @@ export default function Home() {
     try {
       const books = wishlist.slice(0, 25).map((b) => ({ title: b.title, author: b.author }));
       const [availResults, priceResults] = await Promise.all([
-        runAvailability(books),
+        runAvailability(books, "print", "wishlist_pricing"),
         fetchPrices(books),
       ]);
       setWishlistResults(availResults);
@@ -960,6 +1009,9 @@ export default function Home() {
             </button>
             <span className="hint">{recPrompt.length}/500</span>
           </div>
+          <p className="recommendation-privacy">
+            Please don&apos;t include names or other personal information.
+          </p>
 
           {recError && (
             <div className="error-banner">
@@ -1150,6 +1202,15 @@ export default function Home() {
           )}
         </section>
       )}
+
+      <footer className="site-credit">
+        <a
+          href="https://dimadimadima.com/projects/dewey"
+          onClick={() => trackDeweyEvent("dewey_story_clicked")}
+        >
+          Built by Dima <span aria-hidden="true">·</span> Read the story
+        </a>
+      </footer>
     </div>
   );
 }

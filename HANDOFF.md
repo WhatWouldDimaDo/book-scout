@@ -1,33 +1,39 @@
-# HANDOFF — Dewey (Book Scout) · cold-start
+# Dewey — Maintainer Handoff
 
-**Live:** https://deweybooks.vercel.app · **Repo:** github.com/WhatWouldDimaDo/book-scout · **Deploy:** reviewed changes to main deploy through Vercel.
+**Live:** https://deweybooks.vercel.app
 
-## What this is
-Public web app for readers: paste a book list (or tap a kids starter list, or get AI recs), pick a Fulton County branch (default PONCE), see what's physically on the shelf. No login; wishlist in localStorage. Named **Dewey**, Library Nostalgia theme (see BRANDING.md decision).
+**Repository:** https://github.com/WhatWouldDimaDo/book-scout
 
-## Architecture (all in this dir)
-- `app/page.js` — single-page client UI: 3 tabs (Check a List / Get Recs / Wishlist), branch picker, starter-list chips (lucide icons via `LIST_ICONS` map), theme toggle (light default)
-- `app/api/availability/route.js` — POST {books[≤25], branch} → per-book status via `lib/bibliocommons.js` (concurrency 4)
-- `app/api/recommend/route.js` — POST {prompt} → OpenRouter `anthropic/claude-haiku-4.5`, 8 recs JSON; guardrails: 10/hr/IP + 200/day global (`lib/rateLimit.js`, in-memory), 500-char prompt cap, 503 if no key
-- `lib/bibliocommons.js` — THE core. `searchType=bl` field-scoped query (`title:(...) author:(...) formatcode:(BK OR PAPERBACK OR LPRINT)`) → smart-search fallback → Jaccard≥0.5 + author-last-name gate → availability fetch. Returns status/callNumber/dueDate/otherBranchCount/recordUrl/coverUrl (Syndetics jacket, hotlinkable)
-- `data/branches.json` — 34 Fulton branch codes · `data/starterLists.json` — 11 kids lists, 163 verified books
-- `app/globals.css` — token-driven theme: aged paper light (#f4eede/#b5382e stamp red) default, reading-room dark; stamp-style pills, index-card red top rules
+**Deployment:** pushes to `main` build in the linked Vercel project.
 
-## API knowledge (verified live 2026-07-10)
-Gateway: `gateway.bibliocommons.com/v2/libraries/fulcolibrary/` — no auth, server-side only (CSP blocks browser). Gotchas in `docs/solutions/integration-issues/`. Same gateway serves hundreds of US libraries (slug swap) — multi-library is a Later roadmap item.
+## Product
 
-## Known issues / decisions
-- Typo tolerance missing ("Atomik Habits" → not found); needs edit-distance
-- Vercel builds sometimes die post-clone with EMPTY logs = platform flake → empty-commit retry (playbook: `docs/solutions/build-errors/`)
-- Rate limits reset on redeploy (in-memory) — accepted for prototype
-- Non-goals are contractual: no accounts, no DB, no patron-auth holds (PRD.md)
+Dewey is a free library-planning web app. A visitor can paste a reading list, choose a supported BiblioCommons library and branch, and see live availability and call numbers. The app also offers book recommendations, generic starter lists, and a browser-local wishlist. It requires no account.
 
-## Next up (PRD.md v1.1, ranked)
-1. **Best Branch For My List** — availability response already holds all branches' copies; rank branches by on-shelf count for the checked list. Zero new API calls.
-2. Shareable wishlist via URL params
-3. Kids-mode rec toggle (age bands season the prompt + format codes)
-4. "Place hold" CTA (recordUrl already returned)
+## Architecture
 
-## Key docs here
-PRD.md (personas/roadmap/non-goals) · BRANDING.md (18 names, logo prompts, theme DECISION) · PITCH.md (friend pitches + GPT infographic prompt) · DEPLOY.md · ROADMAP.md (phase 2/3) · docs/solutions/ (compound learnings)
+- `app/page.js` — client UI for list checks, recommendations, settings, and wishlist.
+- `app/api/availability/route.js` — validates up to 25 books and checks branch availability.
+- `app/api/recommend/route.js` — books-only recommendations with prompt and request limits.
+- `lib/bibliocommons.js` — catalog search, match confidence, and availability adapter.
+- `lib/llm.js` — server-only OpenRouter client.
+- `lib/analytics.js` — explicit PostHog events and campaign attribution; no prompt or list text.
+- `data/starterLists.json` — generic age-band and topic lists.
 
+## Operational notes
+
+- `OPENROUTER_API_KEY` is server-only and must remain in Vercel or an ignored local environment file.
+- `NEXT_PUBLIC_POSTHOG_KEY` is an optional public client token; analytics is disabled when it is absent.
+- The BiblioCommons JSON gateway is unofficial and may change.
+- Rate limiting is in-memory and is not a dependable hard spending boundary across instances or deployments.
+- Keep a provider-enforced budget on a dedicated Dewey OpenRouter key before broad promotion.
+- Never add patron details, book-list text, recommendation prompts, or other personal content to analytics or fixtures.
+
+## Verification
+
+```bash
+npm ci
+npm run build
+```
+
+Then verify the list-check and recommendation flows, mobile layout, metadata, internal links, and explicit analytics events. See [README.md](README.md), [DEPLOY.md](DEPLOY.md), and [SECURITY.md](SECURITY.md) for public-facing guidance.
