@@ -120,21 +120,43 @@ body {
 }
 
 .settings-summary {
-  display: inline-block;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
   margin: 8px 0 0;
-  padding: 0;
-  border: none;
-  background: transparent;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   color: var(--accent2);
   font-family: var(--font-mono), monospace;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
   cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.settings-summary:hover {
+.settings-summary:hover,
+.settings-summary:focus-visible {
+  background: var(--surface-hover);
+  border-color: var(--accent2);
+}
+
+.settings-summary:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 2px;
+}
+
+.settings-summary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--accent);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .header-actions {
@@ -992,27 +1014,47 @@ textarea.input-area:focus {
 
 .site-credit {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  gap: 7px;
   padding: 28px 0 8px;
   border-top: 3px double var(--border);
   font-family: var(--font-mono), monospace;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
 }
 
 .site-credit a {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  text-decoration: none;
+  gap: 5px;
+  color: var(--accent2);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   transition: color 0.15s ease;
+}
+
+.site-credit-mark {
+  display: inline-block;
+  width: 24px;
+  height: 25px;
+  flex-shrink: 0;
+  background: url("https://dimadimadima.com/images/brand/dima-dima-dima/dima-mark-color.svg") center / contain no-repeat;
 }
 
 .site-credit a:hover,
 .site-credit a:focus-visible {
   color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+}
+
+@media (max-width: 479px) {
+  .site-credit-divider {
+    flex-basis: 100%;
+    height: 0;
+    overflow: hidden;
+  }
 }

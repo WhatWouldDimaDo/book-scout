@@ -786,8 +786,20 @@ export default function Home() {
             Dewey<span className="accent">.</span>
           </h1>
           <p className="tagline">Find your next read on a Fulton County shelf</p>
-          <button className="settings-summary" onClick={() => setSettingsOpen((v) => !v)}>
-            {shortLibraryName(library)} &middot; {branch} &middot; {checkFormat.toUpperCase()}
+          <button
+            className="settings-summary"
+            onClick={() => setSettingsOpen((v) => !v)}
+            aria-expanded={settingsOpen}
+            aria-controls="dewey-settings"
+            aria-label={`Change library or branch. Current selection: ${shortLibraryName(library)}, ${branchOptions.find((b) => b.code === branch)?.label || branch}, ${checkFormat}.`}
+          >
+            <span>
+              {shortLibraryName(library)} &middot; {branchOptions.find((b) => b.code === branch)?.label || branch} &middot; {checkFormat.toUpperCase()}
+            </span>
+            <span className="settings-summary-action">
+              Change branch
+              <ChevronDown size={14} aria-hidden="true" />
+            </span>
           </button>
         </div>
         <div className="header-actions" ref={settingsRef}>
@@ -807,7 +819,7 @@ export default function Home() {
           </button>
 
           {settingsOpen && (
-            <div className="settings-popover">
+            <div className="settings-popover" id="dewey-settings">
               <div className="settings-popover-header">
                 <span>Settings</span>
                 <button className="btn-icon" onClick={() => setSettingsOpen(false)} title="Close">
@@ -1204,11 +1216,19 @@ export default function Home() {
       )}
 
       <footer className="site-credit">
+        <span>See more of my work at</span>
+        <a className="site-credit-brand" href="https://dimadimadima.com/">
+          <span className="site-credit-mark" aria-hidden="true" />
+          dimadimadima.com
+        </a>
+        <span className="site-credit-divider" aria-hidden="true">|</span>
+        <span>Learn more about this project</span>
         <a
           href="https://dimadimadima.com/projects/dewey"
           onClick={() => trackDeweyEvent("dewey_story_clicked")}
         >
-          Built by Dima <span aria-hidden="true">·</span> Read the story
+          Dewey project story
+          <ExternalLink size={13} aria-hidden="true" />
         </a>
       </footer>
     </div>
