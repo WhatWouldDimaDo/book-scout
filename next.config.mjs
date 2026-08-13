@@ -1,17 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingRoot: import.meta.dirname,
-  // Keep framework assets under the app's public mount point so the portfolio
-  // reverse proxy does not collide with its own reserved `/_next` namespace.
-  assetPrefix: "/dewey",
-  async rewrites() {
-    return [
-      {
-        source: "/dewey/_next/:path*",
-        destination: "/_next/:path*",
-      },
-    ];
-  },
+  // The portfolio mounts this app at `/dewey`, but Vercel reserves `/_next`
+  // before external rewrites run. Load immutable framework assets from the
+  // canonical app origin so both the direct and proxied pages stay styled.
+  assetPrefix: "https://deweybooks.vercel.app",
 };
 
 export default nextConfig;
