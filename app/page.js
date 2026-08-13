@@ -806,10 +806,10 @@ export default function Home() {
             onClick={() => setSettingsOpen((v) => !v)}
             aria-expanded={settingsOpen}
             aria-controls="dewey-settings"
-            aria-label={`Change library or branch. Current selection: ${shortLibraryName(library)}, ${branchOptions.find((b) => b.code === branch)?.label || branch}, ${checkFormat}.`}
+            aria-label={`Change library or branch. Current selection: ${shortLibraryName(library)}, ${branchOptions.find((b) => b.code === branch)?.label || branch}.`}
           >
             <span>
-              {shortLibraryName(library)} &middot; {branchOptions.find((b) => b.code === branch)?.label || branch} &middot; {checkFormat.toUpperCase()}
+              {shortLibraryName(library)} &middot; {branchOptions.find((b) => b.code === branch)?.label || branch}
             </span>
             <span className="settings-summary-action">
               Change branch
@@ -882,20 +882,6 @@ export default function Home() {
                 </div>
                 {branchesLoading && <p className="hint settings-hint">Loading branches…</p>}
               </div>
-              <div className="settings-field">
-                <label>Format</label>
-                <div className="format-selector">
-                  {FORMAT_OPTIONS.map((f) => (
-                    <button
-                      key={f.id}
-                      className={`format-option ${checkFormat === f.id ? "active" : ""}`}
-                      onClick={() => setCheckFormat(f.id)}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -924,6 +910,21 @@ export default function Home() {
 
       {activeTab === "check" && (
         <section className="panel">
+          <div className="check-format-field">
+            <span className="check-format-label">Format</span>
+            <div className="format-selector" role="group" aria-label="Book format">
+              {FORMAT_OPTIONS.map((f) => (
+                <button
+                  key={f.id}
+                  className={`format-option ${checkFormat === f.id ? "active" : ""}`}
+                  onClick={() => setCheckFormat(f.id)}
+                  aria-pressed={checkFormat === f.id}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <textarea
             className="input-area"
             placeholder={
@@ -1237,14 +1238,15 @@ export default function Home() {
           dimadimadima.com
         </a>
         <span className="site-credit-divider" aria-hidden="true">|</span>
-        <span>Learn more about this project</span>
-        <a
-          href="https://dimadimadima.com/projects/dewey"
-          onClick={() => trackDeweyEvent("dewey_story_clicked")}
-        >
-          Dewey project story
-          <ExternalLink size={13} aria-hidden="true" />
-        </a>
+        <span>
+          Learn more about this{" "}
+          <a
+            href="https://dimadimadima.com/projects/dewey"
+            onClick={() => trackDeweyEvent("dewey_story_clicked")}
+          >
+            project
+          </a>
+        </span>
       </footer>
     </div>
   );

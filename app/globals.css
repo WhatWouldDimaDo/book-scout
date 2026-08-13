@@ -849,8 +849,23 @@ textarea.input-area:focus {
 
 /* Format selector */
 
+.check-format-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.check-format-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .format-selector {
   display: flex;
+  width: min(100%, 300px);
   gap: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
