@@ -70,3 +70,7 @@ It follows the same anonymous protocol as the public Polaris UI and preserves th
 - `README.md` documents provider scope and the read-only live test.
 - `HANDOFF.md` maps the registry and adapter files.
 - `docs/screenshots/` contains the catalog and local-result evidence captured during verification.
+
+## Preview-deployment note
+
+The production-only asset prefix required by the portfolio's `/dewey` reverse proxy must be keyed to `VERCEL_ENV === "production"`, not the broader `NODE_ENV === "production"`. Vercel preview builds also set `NODE_ENV=production`; pointing their immutable asset URLs at the canonical production origin makes the new preview hashes return 404 and leaves an unstyled, unhydrated page.
