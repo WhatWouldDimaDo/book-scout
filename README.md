@@ -13,6 +13,7 @@ Dewey turns a reading list into a practical library trip. Paste up to 25 books�
 - Generates book recommendations and verifies them against the catalog.
 - Saves a local wishlist without requiring an account.
 - Includes generic age-band and topic starter lists.
+- Finds nearby Fulton and DeKalb branches by ZIP, city, address, branch name, or an explicit one-time location request.
 
 The model recommends. The library catalog verifies. When the match is uncertain, Dewey says so instead of presenting a guess as fact.
 
@@ -43,6 +44,13 @@ npm run test:polaris:live
 
 The live check is read-only and uses generic published titles against DeKalb's logged-out catalog.
 
+Branch-location data comes from the two library systems' official public location pages. Refresh and validate the bundled file with:
+
+```bash
+node scripts/refresh-branch-locations.mjs
+npm test
+```
+
 Environment variables:
 
 - `OPENROUTER_API_KEY` — server-only credential for recommendations. Availability checks work without it.
@@ -52,7 +60,7 @@ Never prefix the OpenRouter key with `NEXT_PUBLIC_` or commit `.env.local`.
 
 ## Privacy and analytics
 
-Dewey does not require an account. Wishlist data stays in the browser's local storage.
+Dewey does not require an account. Wishlist data stays in the browser's local storage. Location access is never requested automatically. If a visitor chooses “Use my location,” precise coordinates are used only in that browser session to rank nearby branches and are not sent to Dewey's server or analytics.
 
 When PostHog is configured, Dewey records only explicit product events such as search started/completed, result count, selected branch, search mode, recommendation completion, and the project-story click. It does not send pasted book-list text or recommendation prompts to analytics. Recommendation prompts are sent to OpenRouter to generate the requested results, so users should not enter names or personal information.
 

@@ -20,6 +20,9 @@ Dewey is a free library-planning web app. A visitor can paste a reading list, ch
 - `lib/bibliocommons.js` — catalog search, match confidence, and availability adapter.
 - `lib/polaris.js` — DeKalb print-book preview using an isolated logged-out Polaris session.
 - `lib/polaris-parser.mjs` — structured Polaris result and branch-holdings parser.
+- `components/BranchPicker.js` — unified ZIP/city/address/name search, explicit nearby-location action, and mobile branch sheet.
+- `lib/branchLocator.mjs` + `data/branchLocations.json` — client-side search/distance logic and official branch coordinates.
+- `scripts/refresh-branch-locations.mjs` — rebuilds the location bundle from official Fulton and DeKalb public pages.
 - `lib/llm.js` — server-only OpenRouter client.
 - `lib/analytics.js` — explicit PostHog events and campaign attribution; no prompt or list text.
 - `data/starterLists.json` — generic age-band and topic lists.
@@ -40,6 +43,7 @@ Dewey is a free library-planning web app. A visitor can paste a reading list, ch
 ```bash
 npm ci
 npm run test:polaris
+npm test
 npm run build
 ```
 

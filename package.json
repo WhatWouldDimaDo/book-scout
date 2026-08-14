@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --test test/*.test.mjs",
     "test:polaris": "node --test test/polaris-parser.test.mjs",
     "test:polaris:live": "node scripts/test-polaris-live.mjs"
   },

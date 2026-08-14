@@ -53,6 +53,7 @@ import fultonBranches from "@/data/branches.json";
 import starterLists from "@/data/starterLists.json";
 import libraries from "@/data/libraries.json";
 import { parseBookList } from "@/lib/parseBookList";
+import BranchPicker from "@/components/BranchPicker";
 
 const THEME_KEY = "dewey-theme";
 const BRANCH_KEY = "dewey-branch";
@@ -66,13 +67,12 @@ function branchStorageKey(library) {
   return `dewey-branch-${library}`;
 }
 
-// "Fulton County (Atlanta), GA" -> "Atlanta"; "Seattle, WA" -> "Seattle".
-function shortLibraryName(slug) {
+function systemDisplayName(slug) {
+  if (slug === "fulcolibrary") return "Fulton County";
+  if (slug === "dekalb") return "DeKalb County · Beta";
   const lib = libraries.find((l) => l.slug === slug);
   if (!lib) return slug;
-  const paren = lib.name.match(/\(([^)]+)\)/);
-  if (paren) return paren[1];
-  return lib.name.split(",")[0].trim();
+  return lib.name.replace(/\s*\([^)]*\)/, "").split(",")[0].trim();
 }
 
 function loadJSON(key, fallback) {
@@ -136,15 +136,13 @@ const FORMAT_OPTIONS = [
 ];
 const VALID_FORMATS = new Set(FORMAT_OPTIONS.map((option) => option.id));
 
-const VISIBLE_CHIP_COUNT = 6;
 const FEATURED_STARTER_LIST_IDS = [
   "ages-3-5",
-  "adult-fiction",
-  "ages-6-8",
-  "mystery-thrillers",
   "ages-9-12",
-  "memoir-nonfiction",
+  "adult-fiction",
+  "mystery-thrillers",
 ];
+const VISIBLE_CHIP_COUNT = FEATURED_STARTER_LIST_IDS.length;
 const FEATURED_STARTER_LISTS = FEATURED_STARTER_LIST_IDS
   .map((id) => starterLists.find((list) => list.id === id))
   .filter(Boolean);
@@ -460,8 +458,10 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const [priceMap, setPriceMap] = useState({});
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [branchPickerOpen, setBranchPickerOpen] = useState(false);
   const settingsRef = useRef(null);
   const selectionEpochRef = useRef(0);
+  const pendingBranchRef = useRef(null);
 
   // Check a List
   const [listText, setListText] = useState("");
@@ -516,6 +516,21 @@ export default function Home() {
     const allowedFormats = nextConfig?.formats || FORMAT_OPTIONS.map((option) => option.id);
     if (!allowedFormats.includes(checkFormat)) setCheckFormat(allowedFormats[0] || "all");
     trackDeweyEvent("dewey_library_changed", { library_system: nextLibrary, library_provider: nextConfig?.provider });
+  }
+
+  function handleLocationSelect(location) {
+    if (location.library === library) {
+      handleBranchChange(location.code);
+    } else {
+      pendingBranchRef.current = { library: location.library, branch: location.code };
+      handleLibraryChange(location.library);
+    }
+    setBranchPickerOpen(false);
+    trackDeweyEvent("dewey_nearby_branch_selected", {
+      library_system: location.library,
+      selected_branch: location.code,
+      selection_method: "location_picker",
+    });
   }
 
   function handleBranchChange(nextBranch) {
@@ -587,8 +602,15 @@ export default function Home() {
       // Branch options intentionally synchronize with the selected library.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setBranchOptions(opts);
+      const pending = pendingBranchRef.current?.library === library ? pendingBranchRef.current.branch : null;
       const stored = loadJSON(branchStorageKey(library), loadJSON(BRANCH_KEY, DEFAULT_BRANCH));
-      setBranch(opts.some((o) => o.code === stored) ? stored : opts[0]?.code || DEFAULT_BRANCH);
+      const next = opts.some((option) => option.code === pending)
+        ? pending
+        : opts.some((option) => option.code === stored)
+          ? stored
+          : opts[0]?.code || DEFAULT_BRANCH;
+      pendingBranchRef.current = null;
+      setBranch(next);
       setBranchesLoading(false);
       return;
     }
@@ -602,13 +624,17 @@ export default function Home() {
         if (cancelled) return;
         const opts = data.branches || [];
         setBranchOptions(opts);
+        const pending = pendingBranchRef.current?.library === library ? pendingBranchRef.current.branch : null;
         const stored = loadJSON(branchStorageKey(library), null);
         const configuredDefault = libraries.find((item) => item.slug === library)?.defaultBranch;
-        const next = opts.some((o) => o.code === stored)
-          ? stored
+        const next = opts.some((o) => o.code === pending)
+          ? pending
+          : opts.some((o) => o.code === stored)
+            ? stored
           : opts.some((o) => o.code === configuredDefault)
             ? configuredDefault
             : opts[0]?.code;
+        pendingBranchRef.current = null;
         if (next) setBranch(next);
       })
       .catch(() => {})
@@ -626,15 +652,16 @@ export default function Home() {
   }, [wishlist, hydrated]);
 
   useEffect(() => {
-    if (!settingsOpen) return;
+    if (!settingsOpen && !branchPickerOpen) return;
     function handleOutsideClick(e) {
       if (settingsRef.current && !settingsRef.current.contains(e.target)) {
         setSettingsOpen(false);
+        setBranchPickerOpen(false);
       }
     }
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [settingsOpen]);
+  }, [settingsOpen, branchPickerOpen]);
 
   const toggleWishlist = useCallback((book) => {
     setWishlist((prev) => {
@@ -866,31 +893,51 @@ export default function Home() {
   return (
     <div className="shell">
       <header className="header" ref={settingsRef}>
-        <div>
+        <div className="branch-picker-anchor">
           <h1 className="wordmark">
             Dewey<span className="accent">.</span>
           </h1>
           <p className="tagline">Search a whole list and see what your library has</p>
           <button
             className="settings-summary"
-            onClick={() => setSettingsOpen((v) => !v)}
-            aria-expanded={settingsOpen}
-            aria-controls="dewey-settings"
-            aria-label={`Change library or branch. Current selection: ${shortLibraryName(library)}, ${branchOptions.find((b) => b.code === branch)?.label || branch}.`}
+            onClick={() => {
+              setBranchPickerOpen((value) => !value);
+              setSettingsOpen(false);
+            }}
+            aria-expanded={branchPickerOpen}
+            aria-controls="dewey-branch-picker"
+            aria-label={`Find a library branch. Current selection: ${branchOptions.find((b) => b.code === branch)?.label || branch}, ${systemDisplayName(library)}.`}
           >
             <span>
-              {shortLibraryName(library)} &middot; {branchOptions.find((b) => b.code === branch)?.label || branch}
+              {branchOptions.find((b) => b.code === branch)?.label || branch} &middot; {systemDisplayName(library)}
             </span>
             <span className="settings-summary-action">
-              Change library or branch
+              Find a branch
               <ChevronDown size={14} aria-hidden="true" />
             </span>
           </button>
+          {branchPickerOpen && (
+            <div id="dewey-branch-picker">
+              <BranchPicker
+                currentLibrary={library}
+                currentBranch={branch}
+                onSelect={handleLocationSelect}
+                onClose={() => setBranchPickerOpen(false)}
+                onBrowseAll={() => {
+                  setBranchPickerOpen(false);
+                  setSettingsOpen(true);
+                }}
+              />
+            </div>
+          )}
         </div>
         <div className="header-actions">
           <button
             className="theme-toggle"
-            onClick={() => setSettingsOpen((v) => !v)}
+            onClick={() => {
+              setSettingsOpen((value) => !value);
+              setBranchPickerOpen(false);
+            }}
             title="Settings"
           >
             <Settings size={18} />
@@ -906,7 +953,7 @@ export default function Home() {
           {settingsOpen && (
             <div className="settings-popover" id="dewey-settings">
               <div className="settings-popover-header">
-                <span>Settings</span>
+                <span>Advanced settings</span>
                 <button className="btn-icon" onClick={() => setSettingsOpen(false)} title="Close">
                   <X size={14} />
                 </button>
@@ -1092,8 +1139,20 @@ export default function Home() {
 
           {!checkLoading && checkResults === null && !checkError && (
             <div className="empty-state">
-              <Library size={32} />
-              <p>Paste a list of titles above and we&apos;ll check what&apos;s on the shelf at your branch.</p>
+              <div className="empty-state-flow" aria-hidden="true">
+                <span className="empty-state-list">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span className="empty-state-arrow">→</span>
+                <span className="empty-state-shelf">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
+              <p>Enter a few titles above and Dewey will check if they&apos;re at your branch or nearby.</p>
             </div>
           )}
         </section>
