@@ -23,16 +23,16 @@ const courierPrime = Courier_Prime({
 
 export const metadata = {
   metadataBase: new URL("https://deweybooks.vercel.app"),
-  title: "Dewey — Find Fulton County Library Books on the Shelf",
+  title: "Dewey — Search a Whole Library List at Once",
   description:
-    "Paste a reading list or ask for recommendations. Dewey checks the Fulton County Library catalog for live availability and call numbers at your branch.",
+    "Paste a reading list or ask for recommendations. Dewey checks supported local library catalogs for live availability and call numbers at your branch or nearby.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Dewey — Find Books on a Fulton County Library Shelf",
+    title: "Dewey — Search a Whole Library List at Once",
     description:
-      "Paste a reading list or ask for recommendations, then see live availability and call numbers for your Fulton County branch.",
+      "Paste a reading list or ask for recommendations, then see live availability and call numbers at your branch or nearby.",
     url: "/",
     siteName: "Dewey",
     type: "website",
@@ -41,15 +41,15 @@ export const metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "Dewey checks reading lists against live Fulton County Library shelf availability",
+        alt: "Dewey checks a reading list against live local library availability",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Dewey — Find Books on a Fulton County Library Shelf",
+    title: "Dewey — Search a Whole Library List at Once",
     description:
-      "Paste a reading list or ask for recommendations, then see live availability and call numbers for your Fulton County branch.",
+      "Paste a reading list or ask for recommendations, then see live availability and call numbers at your branch or nearby.",
     images: ["/opengraph-image.png"],
   },
 };
