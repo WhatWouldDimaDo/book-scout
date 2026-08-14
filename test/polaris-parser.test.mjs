@@ -41,6 +41,17 @@ test("uses the author to disambiguate identical titles", () => {
   assert.equal(parseSearchResults(html, "James", "Percival Everett")[0].bibId, "222");
 });
 
+test("keeps an exact title ahead of an expanded title when the author hint differs", () => {
+  const html = [
+    result({ pos: 1, bibId: "304878", title: "Curious George", author: "Rey, H. A." }),
+    result({ pos: 2, bibId: "84782", title: "Curious George and the dump truck" }),
+  ].join("");
+
+  const best = parseSearchResults(html, "Curious George", "Margret Rey")[0];
+  assert.equal(best.bibId, "304878");
+  assert.equal(best.title, "Curious George");
+});
+
 test("does not inflate an unrelated title from surrounding result text", () => {
   const html = result({ pos: 1, bibId: "370853", title: "It Chapter Two", author: "King, Stephen" });
   const [candidate] = parseSearchResults(html, "It", "Stephen King");

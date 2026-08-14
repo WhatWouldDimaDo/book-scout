@@ -60,6 +60,7 @@ It follows the same anonymous protocol as the public Polaris UI and preserves th
 ## Prevention
 
 - Keep deterministic parser fixtures for exact titles, title-sort fallback positions, author disambiguation, media rejection, missing branches, header-derived status, call numbers, precise distance ranking, and expired sessions.
+- Treat an exact normalized title as primary even when an AI-supplied author hint differs from the catalog's author form; use author similarity to disambiguate identical exact titles, not to promote a broader title above an exact one.
 - Run `npm run test:polaris:live` before considering provider changes complete.
 - Never classify provider/session failures as a genuine `not_found` result.
 - Keep formats and bundled branches in `data/libraries.json` and validate them in the API.
