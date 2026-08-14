@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
-import { checkBookAvailability } from "@/lib/bibliocommons";
-import { checkPolarisBookAvailability } from "@/lib/polaris";
+import { checkCatalogBookAvailability } from "@/lib/catalogProviders";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { chatCompletion, extractJsonArray } from "@/lib/llm";
-import libraries from "@/data/libraries.json";
+import {
+  branchIsValid,
+  formatIsSupported,
+  getLibrarySystem,
+} from "@/lib/librarySystems";
 
 const MAX_BOOKS = 25;
 const CONCURRENCY = 4;
@@ -61,11 +64,15 @@ export async function POST(request) {
   if (!FORMATS.includes(format)) {
     return NextResponse.json({ error: "Invalid format" }, { status: 400 });
   }
-  if (!libraries.some((l) => l.slug === library)) {
+  const system = getLibrarySystem(library);
+  if (!system) {
     return NextResponse.json({ error: "Invalid library" }, { status: 400 });
   }
-  if (library === "dekalb-polaris" && !["all", "print"].includes(format)) {
-    return NextResponse.json({ error: "DeKalb preview currently checks print titles only" }, { status: 400 });
+  if (!formatIsSupported(system, format)) {
+    return NextResponse.json({ error: "Format is not supported by this library system" }, { status: 400 });
+  }
+  if (!branchIsValid(system, branch)) {
+    return NextResponse.json({ error: "Branch does not belong to this library system" }, { status: 400 });
   }
   if (books.length > MAX_BOOKS) {
     return NextResponse.json(
@@ -86,9 +93,8 @@ export async function POST(request) {
     ? await normalizeBooks(validBooks)
     : validBooks;
 
-  const checkAvailability = library === "dekalb-polaris"
-    ? (book) => checkPolarisBookAvailability(book, branch)
-    : (book) => checkBookAvailability(book, branch, format, library);
+  const checkAvailability = (book) =>
+    checkCatalogBookAvailability({ book, branch, format, system });
   const results = await mapWithConcurrency(normalized, CONCURRENCY, checkAvailability);
 
   return NextResponse.json({ results });

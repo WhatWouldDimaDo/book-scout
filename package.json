@@ -1,13 +1,15 @@
 {
   "name": "book-scout",
   "version": "0.2.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:polaris": "node --test test/polaris-parser.test.mjs"
+    "test:polaris": "node --test test/polaris-parser.test.mjs",
+    "test:polaris:live": "node scripts/test-polaris-live.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

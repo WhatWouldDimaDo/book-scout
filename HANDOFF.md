@@ -8,14 +8,18 @@
 
 ## Product
 
-Dewey is a free library-planning web app. A visitor can paste a reading list, choose a supported BiblioCommons library and branch, and see live availability and call numbers. The app also offers book recommendations, generic starter lists, and a browser-local wishlist. It requires no account.
+Dewey is a free library-planning web app. A visitor can paste a reading list, choose a supported library system and branch, and see live availability and call numbers. The app also offers book recommendations, generic starter lists, and a browser-local wishlist. It requires no account.
 
 ## Architecture
 
 - `app/page.js` — client UI for list checks, recommendations, settings, and wishlist.
 - `app/api/availability/route.js` — validates up to 25 books and checks branch availability.
+- `lib/librarySystems.js` — system registry, capabilities, bundled branches, and server-side validation.
+- `lib/catalogProviders.js` — common provider dispatch contract.
 - `app/api/recommend/route.js` — books-only recommendations with prompt and request limits.
 - `lib/bibliocommons.js` — catalog search, match confidence, and availability adapter.
+- `lib/polaris.js` — DeKalb print-book preview using an isolated logged-out Polaris session.
+- `lib/polaris-parser.mjs` — structured Polaris result and branch-holdings parser.
 - `lib/llm.js` — server-only OpenRouter client.
 - `lib/analytics.js` — explicit PostHog events and campaign attribution; no prompt or list text.
 - `data/starterLists.json` — generic age-band and topic lists.
@@ -25,6 +29,8 @@ Dewey is a free library-planning web app. A visitor can paste a reading list, ch
 - `OPENROUTER_API_KEY` is server-only and must remain in Vercel or an ignored local environment file.
 - `NEXT_PUBLIC_POSTHOG_KEY` is an optional public client token; analytics is disabled when it is absent.
 - The BiblioCommons JSON gateway is unofficial and may change.
+- The DeKalb Polaris preview is also unofficial, print-only, and depends on public HTML. It must preserve one anonymous session across search, AJAX results, and holdings.
+- Library formats and branches are validated from the shared registry before a provider is called. New catalog families should be added as provider adapters rather than UI/API special cases.
 - Rate limiting is in-memory and is not a dependable hard spending boundary across instances or deployments.
 - Keep a provider-enforced budget on a dedicated Dewey OpenRouter key before broad promotion.
 - Never add patron details, book-list text, recommendation prompts, or other personal content to analytics or fixtures.
@@ -33,6 +39,7 @@ Dewey is a free library-planning web app. A visitor can paste a reading list, ch
 
 ```bash
 npm ci
+npm run test:polaris
 npm run build
 ```
 

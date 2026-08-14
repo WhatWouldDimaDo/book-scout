@@ -1,11 +1,19 @@
 [
   {
     "slug": "fulcolibrary",
-    "name": "Fulton County (Atlanta), GA"
+    "name": "Fulton County (Atlanta), GA",
+    "provider": "bibliocommons",
+    "branchSource": "fulton",
+    "defaultBranch": "PONCE",
+    "formats": ["all", "print", "ebook", "audiobook"]
   },
   {
-    "slug": "dekalb-polaris",
-    "name": "DeKalb County (Atlanta), GA — preview"
+    "slug": "dekalb",
+    "name": "DeKalb County (Atlanta), GA — preview",
+    "provider": "polaris",
+    "branchSource": "dekalb",
+    "defaultBranch": "Dunwoody Library",
+    "formats": ["print"]
   },
   {
     "slug": "seattle",

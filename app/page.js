@@ -125,6 +125,7 @@ const STATUS_CONFIG = {
   checked_out: { label: "Checked Out", pillClass: "pill-checked-out" },
   elsewhere: { label: "Elsewhere", pillClass: "pill-elsewhere" },
   not_found: { label: "Not Found", pillClass: "pill-not-found" },
+  unavailable: { label: "Catalog unavailable", pillClass: "pill-not-found" },
 };
 
 const FORMAT_OPTIONS = [
@@ -460,6 +461,7 @@ export default function Home() {
   const [priceMap, setPriceMap] = useState({});
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
+  const selectionEpochRef = useRef(0);
 
   // Check a List
   const [listText, setListText] = useState("");
@@ -486,6 +488,48 @@ export default function Home() {
   const [wishlistResultsCopyLabel, setWishlistResultsCopyLabel] = useState("Copy");
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsResult, setStatsResult] = useState(null);
+  const selectedLibrary = libraries.find((item) => item.slug === library) || libraries[0];
+  const supportedFormats = selectedLibrary.formats || FORMAT_OPTIONS.map((option) => option.id);
+  const visibleFormatOptions = FORMAT_OPTIONS.filter((option) => supportedFormats.includes(option.id));
+  const selectionReady = !branchesLoading && branchOptions.some((option) => option.code === branch);
+
+  function clearAvailabilityState() {
+    setCheckResults(null);
+    setCheckError(null);
+    setCheckLoading(false);
+    setRecAvailability({});
+    setRecAllLoading(false);
+    setWishlistResults(null);
+    setWishlistLoading(false);
+    setStatsResult(null);
+    setStatsLoading(false);
+  }
+
+  function handleLibraryChange(nextLibrary) {
+    const nextConfig = libraries.find((item) => item.slug === nextLibrary);
+    selectionEpochRef.current += 1;
+    clearAvailabilityState();
+    setBranch("");
+    setBranchOptions([]);
+    setBranchesLoading(true);
+    setLibrary(nextLibrary);
+    const allowedFormats = nextConfig?.formats || FORMAT_OPTIONS.map((option) => option.id);
+    if (!allowedFormats.includes(checkFormat)) setCheckFormat(allowedFormats[0] || "all");
+    trackDeweyEvent("dewey_library_changed", { library_system: nextLibrary, library_provider: nextConfig?.provider });
+  }
+
+  function handleBranchChange(nextBranch) {
+    selectionEpochRef.current += 1;
+    clearAvailabilityState();
+    setBranch(nextBranch);
+    trackDeweyEvent("dewey_branch_changed", { library_system: library, selected_branch: nextBranch });
+  }
+
+  function handleFormatChange(nextFormat) {
+    selectionEpochRef.current += 1;
+    clearAvailabilityState();
+    setCheckFormat(nextFormat);
+  }
 
   useEffect(() => {
     initializeDeweyAnalytics();
@@ -527,8 +571,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated) return;
-    saveJSON(branchStorageKey(library), branch);
-  }, [branch, library, hydrated]);
+    if (branchOptions.some((option) => option.code === branch)) {
+      saveJSON(branchStorageKey(library), branch);
+    }
+  }, [branch, branchOptions, library, hydrated]);
 
   // Load the branch list whenever the library system changes (including the
   // initial hydration): Fulton uses the static bundled list, everything else
@@ -543,6 +589,7 @@ export default function Home() {
       setBranchOptions(opts);
       const stored = loadJSON(branchStorageKey(library), loadJSON(BRANCH_KEY, DEFAULT_BRANCH));
       setBranch(opts.some((o) => o.code === stored) ? stored : opts[0]?.code || DEFAULT_BRANCH);
+      setBranchesLoading(false);
       return;
     }
 
@@ -556,7 +603,12 @@ export default function Home() {
         const opts = data.branches || [];
         setBranchOptions(opts);
         const stored = loadJSON(branchStorageKey(library), null);
-        const next = opts.some((o) => o.code === stored) ? stored : opts[0]?.code;
+        const configuredDefault = libraries.find((item) => item.slug === library)?.defaultBranch;
+        const next = opts.some((o) => o.code === stored)
+          ? stored
+          : opts.some((o) => o.code === configuredDefault)
+            ? configuredDefault
+            : opts[0]?.code;
         if (next) setBranch(next);
       })
       .catch(() => {})
@@ -597,6 +649,8 @@ export default function Home() {
   }, []);
 
   async function runAvailability(books, format = "all", searchMode = "list") {
+    if (!selectionReady) throw new Error("Choose a library branch before searching");
+    const requestEpoch = selectionEpochRef.current;
     const eventProperties = {
       search_mode: searchMode,
       selected_branch: branch,
@@ -615,6 +669,11 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Availability check failed");
+      if (requestEpoch !== selectionEpochRef.current) {
+        const staleError = new Error("Library selection changed while the catalog was loading");
+        staleError.code = "STALE_SELECTION";
+        throw staleError;
+      }
 
       trackDeweyEvent("dewey_search_completed", {
         ...eventProperties,
@@ -623,6 +682,7 @@ export default function Home() {
       });
       return data.results;
     } catch (error) {
+      if (error.code === "STALE_SELECTION") throw error;
       trackDeweyEvent("dewey_search_completed", {
         ...eventProperties,
         success: false,
@@ -657,7 +717,7 @@ export default function Home() {
       const results = await runAvailability(books.slice(0, 25), checkFormat, "list");
       setCheckResults(results);
     } catch (err) {
-      setCheckError(err.message);
+      if (err.code !== "STALE_SELECTION") setCheckError(err.message);
     } finally {
       setCheckLoading(false);
     }
@@ -805,12 +865,12 @@ export default function Home() {
 
   return (
     <div className="shell">
-      <header className="header">
+      <header className="header" ref={settingsRef}>
         <div>
           <h1 className="wordmark">
             Dewey<span className="accent">.</span>
           </h1>
-          <p className="tagline">Find your next read on a Fulton County shelf</p>
+          <p className="tagline">Search a whole list and see what your library has</p>
           <button
             className="settings-summary"
             onClick={() => setSettingsOpen((v) => !v)}
@@ -822,12 +882,12 @@ export default function Home() {
               {shortLibraryName(library)} &middot; {branchOptions.find((b) => b.code === branch)?.label || branch}
             </span>
             <span className="settings-summary-action">
-              Change branch
+              Change library or branch
               <ChevronDown size={14} aria-hidden="true" />
             </span>
           </button>
         </div>
-        <div className="header-actions" ref={settingsRef}>
+        <div className="header-actions">
           <button
             className="theme-toggle"
             onClick={() => setSettingsOpen((v) => !v)}
@@ -859,7 +919,7 @@ export default function Home() {
                     id="library-select"
                     className="branch-select"
                     value={library}
-                    onChange={(e) => setLibrary(e.target.value)}
+                    onChange={(e) => handleLibraryChange(e.target.value)}
                   >
                     {libraries.map((l) => (
                       <option key={l.slug} value={l.slug}>
@@ -869,7 +929,7 @@ export default function Home() {
                   </select>
                 </div>
                 <p className="hint settings-hint">
-                  {library === "dekalb-polaris"
+                  {library === "dekalb"
                     ? "Preview: public DeKalb Polaris catalog lookup for print titles."
                     : `${libraries.length - 1} systems on BiblioCommons — availability data is live from each catalog.`}
                 </p>
@@ -882,7 +942,7 @@ export default function Home() {
                     id="branch-select"
                     className="branch-select"
                     value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
+                    onChange={(e) => handleBranchChange(e.target.value)}
                     disabled={branchesLoading || branchOptions.length === 0}
                   >
                     {branchOptions.map((b) => (
@@ -902,9 +962,9 @@ export default function Home() {
                     id="format-select"
                     className="branch-select"
                     value={checkFormat}
-                    onChange={(e) => setCheckFormat(e.target.value)}
+                    onChange={(e) => handleFormatChange(e.target.value)}
                   >
-                    {FORMAT_OPTIONS.map((option) => (
+                    {visibleFormatOptions.map((option) => (
                       <option key={option.id} value={option.id}>
                         {option.label}
                       </option>
@@ -953,7 +1013,7 @@ export default function Home() {
           />
 
           <div className="card-actions">
-            <button className="btn btn-primary" onClick={handleCheckList} disabled={checkLoading}>
+            <button className="btn btn-primary" onClick={handleCheckList} disabled={checkLoading || !selectionReady}>
               {checkLoading ? <Loader2 size={16} className="spin" /> : <Search size={16} />}
               Search
             </button>
@@ -1070,7 +1130,7 @@ export default function Home() {
 
           {!recLoading && recResults && recResults.length > 0 && (
             <div className="card-actions">
-              <button className="btn btn-secondary" onClick={checkAllRecAvailability} disabled={recAllLoading}>
+              <button className="btn btn-secondary" onClick={checkAllRecAvailability} disabled={recAllLoading || !selectionReady}>
                 {recAllLoading ? <Loader2 size={16} className="spin" /> : <Library size={16} />}
                 Check all at my branch
               </button>
@@ -1114,6 +1174,7 @@ export default function Home() {
                         <button
                           className="btn-ghost"
                           onClick={() => checkRecAvailability(i, rec)}
+                          disabled={!selectionReady}
                         >
                           Check availability
                         </button>
@@ -1144,11 +1205,11 @@ export default function Home() {
           ) : (
             <>
               <div className="wishlist-toolbar">
-                <button className="btn btn-primary" onClick={handleCheckWishlist} disabled={wishlistLoading}>
+                <button className="btn btn-primary" onClick={handleCheckWishlist} disabled={wishlistLoading || !selectionReady}>
                   {wishlistLoading ? <Loader2 size={16} className="spin" /> : <Library size={16} />}
                   Check all at my branch
                 </button>
-                <button className="btn btn-secondary" onClick={handleWishlistStats} disabled={statsLoading}>
+                <button className="btn btn-secondary" onClick={handleWishlistStats} disabled={statsLoading || !selectionReady}>
                   {statsLoading ? <Loader2 size={16} className="spin" /> : <Calculator size={16} />}
                   Check all + price it
                 </button>

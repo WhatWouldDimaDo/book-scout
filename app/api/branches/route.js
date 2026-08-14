@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import libraries from "@/data/libraries.json";
-import branchesFallback from "@/data/branches.json";
-import dekalbBranches from "@/data/dekalbBranches.json";
+import { getBundledBranches, getLibrarySystem } from "@/lib/librarySystems";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const USER_AGENT =
@@ -10,10 +8,6 @@ const USER_AGENT =
 // Module-level cache, keyed by library slug. Survives across requests in the
 // same server process; cold on redeploy (same tradeoff as lib/rateLimit.js).
 const cache = new Map();
-
-function isValidLibrary(slug) {
-  return libraries.some((l) => l.slug === slug);
-}
 
 // Branch codes aren't exposed as a dedicated endpoint on the gateway — they
 // ride along as facet counts on any search. Pick a query with broad hits
@@ -43,19 +37,15 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const library = searchParams.get("library") || "fulcolibrary";
 
-  if (!isValidLibrary(library)) {
+  const system = getLibrarySystem(library);
+  if (!system) {
     return NextResponse.json({ error: "Unknown library system" }, { status: 400 });
   }
 
-  // Fast path: Fulton's branch list is static and already verified.
-  if (library === "fulcolibrary") {
+  const bundled = getBundledBranches(system);
+  if (bundled) {
     return NextResponse.json({
-      branches: branchesFallback.map((b) => ({ code: b.code, label: b.name })),
-    });
-  }
-  if (library === "dekalb-polaris") {
-    return NextResponse.json({
-      branches: dekalbBranches.map((b) => ({ code: b.code, label: b.name })),
+      branches: bundled.map((branch) => ({ code: branch.code, label: branch.name })),
     });
   }
 
