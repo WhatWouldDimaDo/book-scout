@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import libraries from "@/data/libraries.json";
 import branchesFallback from "@/data/branches.json";
+import dekalbBranches from "@/data/dekalbBranches.json";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const USER_AGENT =
@@ -50,6 +51,11 @@ export async function GET(request) {
   if (library === "fulcolibrary") {
     return NextResponse.json({
       branches: branchesFallback.map((b) => ({ code: b.code, label: b.name })),
+    });
+  }
+  if (library === "dekalb-polaris") {
+    return NextResponse.json({
+      branches: dekalbBranches.map((b) => ({ code: b.code, label: b.name })),
     });
   }
 

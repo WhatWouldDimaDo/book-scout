@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkBookAvailability } from "@/lib/bibliocommons";
+import { checkPolarisBookAvailability } from "@/lib/polaris";
 import { mapWithConcurrency } from "@/lib/concurrency";
 import { chatCompletion, extractJsonArray } from "@/lib/llm";
 import libraries from "@/data/libraries.json";
@@ -63,6 +64,9 @@ export async function POST(request) {
   if (!libraries.some((l) => l.slug === library)) {
     return NextResponse.json({ error: "Invalid library" }, { status: 400 });
   }
+  if (library === "dekalb-polaris" && !["all", "print"].includes(format)) {
+    return NextResponse.json({ error: "DeKalb preview currently checks print titles only" }, { status: 400 });
+  }
   if (books.length > MAX_BOOKS) {
     return NextResponse.json(
       { error: `Max ${MAX_BOOKS} books per request` },
@@ -82,9 +86,10 @@ export async function POST(request) {
     ? await normalizeBooks(validBooks)
     : validBooks;
 
-  const results = await mapWithConcurrency(normalized, CONCURRENCY, (book) =>
-    checkBookAvailability(book, branch, format, library)
-  );
+  const checkAvailability = library === "dekalb-polaris"
+    ? (book) => checkPolarisBookAvailability(book, branch)
+    : (book) => checkBookAvailability(book, branch, format, library);
+  const results = await mapWithConcurrency(normalized, CONCURRENCY, checkAvailability);
 
   return NextResponse.json({ results });
 }

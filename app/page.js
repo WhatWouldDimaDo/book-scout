@@ -869,7 +869,9 @@ export default function Home() {
                   </select>
                 </div>
                 <p className="hint settings-hint">
-                  {libraries.length} systems on BiblioCommons — availability data is live from each catalog.
+                  {library === "dekalb-polaris"
+                    ? "Preview: public DeKalb Polaris catalog lookup for print titles."
+                    : `${libraries.length - 1} systems on BiblioCommons — availability data is live from each catalog.`}
                 </p>
               </div>
               <div className="settings-field">
