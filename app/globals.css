@@ -701,6 +701,69 @@ textarea.input-area:focus {
   color: var(--muted);
 }
 
+.nearby-availability {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-hover);
+  font-size: 12px;
+}
+
+.nearby-label {
+  color: var(--muted);
+  font-family: var(--font-mono), monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nearby-availability ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nearby-availability li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nearby-distance,
+.nearby-more {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.catalog-cover-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.catalog-title-link {
+  color: inherit;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.catalog-cover-link:focus-visible,
+.catalog-title-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.catalog-title-link:hover {
+  color: var(--accent);
+}
+
 .card-actions {
   display: flex;
   gap: 8px;
@@ -1272,14 +1335,23 @@ textarea.input-area:focus {
   background: var(--amber-bg);
 }
 
+.catalog-support-note {
+  margin: 32px 0 0;
+  padding: 20px 16px 0;
+  border-top: 3px double var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .site-credit {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 28px 0 8px;
-  border-top: 3px double var(--border);
+  padding: 10px 0 8px;
   font-family: var(--font-mono), monospace;
   font-size: 11px;
   line-height: 1.6;

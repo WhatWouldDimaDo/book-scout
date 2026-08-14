@@ -163,12 +163,13 @@ function statusLabelFor(result) {
     if (result.status === "checked_out") return "Wait List";
   }
   if (result.status === "checked_out" && result.dueDate) {
-    return `Checked Out — back ${formatDueDate(result.dueDate)}`;
+    return `Checked out here — back ${formatDueDate(result.dueDate)}`;
+  }
+  if (result.status === "checked_out" && result.otherBranchCount > 0) {
+    return "Checked out here";
   }
   if (result.status === "elsewhere") {
-    return result.otherBranchCount > 0
-      ? `At ${result.otherBranchCount} other branch${result.otherBranchCount === 1 ? "" : "es"}`
-      : "Not at this branch";
+    return "Not at this branch";
   }
   return config.label;
 }
@@ -177,6 +178,27 @@ function StatusPill({ result }) {
   if (!result) return null;
   const config = STATUS_CONFIG[result.status] || STATUS_CONFIG.not_found;
   return <span className={`pill ${config.pillClass}`}>{statusLabelFor(result)}</span>;
+}
+
+function NearbyAvailability({ result }) {
+  if (result?.status === "on_shelf" || !result?.nearbyBranches?.length) return null;
+  const hiddenCount = Math.max(0, (result.otherBranchCount || 0) - result.nearbyBranches.length);
+  return (
+    <div className="nearby-availability">
+      <span className="nearby-label">Available nearby</span>
+      <ul>
+        {result.nearbyBranches.map((branch) => (
+          <li key={branch.name}>
+            <span>{branch.name}</span>
+            {branch.distanceMiles != null && <span className="nearby-distance">{branch.distanceMiles} mi</span>}
+          </li>
+        ))}
+      </ul>
+      {hiddenCount > 0 && (
+        <span className="nearby-more">+{hiddenCount} more branch{hiddenCount === 1 ? "" : "es"}</span>
+      )}
+    </div>
+  );
 }
 
 // Book identity helpers — shared across wishlist toggling, dedupe, and export.
@@ -221,6 +243,9 @@ function resultsToText(results) {
       const author = r.author || "";
       const parts = [statusLabelFor(r), author ? `${title} by ${author}` : title];
       if (r.callNumber && !r.isDigital) parts.push(r.callNumber);
+      if (r.nearbyBranches?.length) {
+        parts.push(`Available nearby: ${r.nearbyBranches.map((branch) => branch.name).join(", ")}`);
+      }
       return parts.join(" — ");
     })
     .join("\n");
@@ -240,6 +265,7 @@ function resultsToCsv(results, priceMap) {
     "callNumber",
     "dueDate",
     "otherBranchCount",
+    "nearbyBranches",
     "recordUrl",
     "amazonUrl",
     "price",
@@ -256,6 +282,7 @@ function resultsToCsv(results, priceMap) {
       r.callNumber || "",
       r.dueDate || "",
       r.otherBranchCount ?? "",
+      r.nearbyBranches?.map((branch) => branch.name).join(" | ") || "",
       r.recordUrl || "",
       amazonSearchUrl(title, author),
       priceEntry?.price ?? "",
@@ -365,6 +392,7 @@ function ResultCard({ result, wishlist, onToggleWishlist }) {
         <StatusPill result={result} />
         {result.confidence === "verify" && <span className="badge-verify">Verify match</span>}
       </div>
+      <NearbyAvailability result={result} />
       <div className="card-links">
         {result.recordUrl && (
           <a href={result.recordUrl} target="_blank" rel="noreferrer" className="record-link">
@@ -977,7 +1005,7 @@ export default function Home() {
                 </div>
                 <p className="hint settings-hint">
                   {library === "dekalb"
-                    ? "Preview: public DeKalb Polaris catalog lookup for print titles."
+                    ? "Beta: DeKalb County Public Library’s Polaris catalog. Print titles only."
                     : `${libraries.length - 1} systems on BiblioCommons — availability data is live from each catalog.`}
                 </p>
               </div>
@@ -1200,17 +1228,37 @@ export default function Home() {
             <div className="results-list">
               {recResults.map((rec, i) => {
                 const avail = recAvailability[i];
+                const catalogUrl = avail?.result?.recordUrl;
                 const inWishlist = wishlist.some((b) => sameBook(b, { title: rec.title, author: rec.author }));
                 return (
                   <div key={i} className="card">
                     <div className="card-row">
                       <div className="card-lead">
                         {avail?.result?.coverUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={avail.result.coverUrl} alt="" className="cover" loading="lazy" />
+                          catalogUrl ? (
+                            <a
+                              href={catalogUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="catalog-cover-link"
+                              aria-label={`View ${rec.title} in the library catalog`}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={avail.result.coverUrl} alt="" className="cover" loading="lazy" />
+                            </a>
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={avail.result.coverUrl} alt="" className="cover" loading="lazy" />
+                          )
                         )}
                         <div>
-                        <p className="card-title">{rec.title}</p>
+                        <p className="card-title">
+                          {catalogUrl ? (
+                            <a href={catalogUrl} target="_blank" rel="noreferrer" className="catalog-title-link">
+                              {rec.title}
+                            </a>
+                          ) : rec.title}
+                        </p>
                         <p className="card-author">
                           {rec.author}
                           {rec.year ? ` · ${rec.year}` : ""}
@@ -1239,6 +1287,7 @@ export default function Home() {
                         </button>
                       )}
                     </div>
+                    {avail?.result && <NearbyAvailability result={avail.result} />}
                   </div>
                 );
               })}
@@ -1369,6 +1418,9 @@ export default function Home() {
         </section>
       )}
 
+      <p className="catalog-support-note">
+        Currently supports the listed library systems using BiblioCommons, plus the DeKalb County Public Library Polaris catalog in beta (print titles only).
+      </p>
       <footer className="site-credit">
         <span>See more of my work at</span>
         <a className="site-credit-brand" href="https://dimadimadima.com/">

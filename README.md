@@ -2,6 +2,8 @@
 
 Dewey turns a reading list into a practical library trip. Paste up to 25 books—or ask for recommendations—choose a supported library system and branch, and see live shelf availability and call numbers.
 
+Currently supports the listed library systems using BiblioCommons, plus the DeKalb County Public Library Polaris catalog in beta (print titles only).
+
 [Try Dewey](https://deweybooks.vercel.app) · [Read the project story](https://dimadimadima.com/projects/dewey)
 
 ![Dewey showing three books on shelf at Ponce de Leon Branch with call numbers](public/social/dewey-facebook-result-state.jpg)
