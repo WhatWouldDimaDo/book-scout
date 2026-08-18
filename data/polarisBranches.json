@@ -1,0 +1,87 @@
+{
+  "fairfax": [
+    { "code": "Access Services", "name": "Access Services" },
+    { "code": "Burke Centre Library", "name": "Burke Centre Library" },
+    { "code": "Centreville Regional Library", "name": "Centreville Regional Library" },
+    { "code": "Chantilly Regional Library", "name": "Chantilly Regional Library" },
+    { "code": "City of Fairfax Regional Library", "name": "City of Fairfax Regional Library" },
+    { "code": "Culmore Library", "name": "Culmore Library" },
+    { "code": "Dolley Madison Library", "name": "Dolley Madison Library" },
+    { "code": "George Mason Regional Library", "name": "George Mason Regional Library" },
+    { "code": "Great Falls Library", "name": "Great Falls Library" },
+    { "code": "Herndon Fortnightly Library", "name": "Herndon Fortnightly Library" },
+    { "code": "John Marshall Library", "name": "John Marshall Library" },
+    { "code": "Kings Park Library", "name": "Kings Park Library" },
+    { "code": "Kingstowne Regional Library", "name": "Kingstowne Regional Library" },
+    { "code": "Lorton Library", "name": "Lorton Library" },
+    { "code": "Martha Washington Library", "name": "Martha Washington Library" },
+    { "code": "Oakton Library", "name": "Oakton Library" },
+    { "code": "Patrick Henry Library", "name": "Patrick Henry Library" },
+    { "code": "Pohick Regional Library", "name": "Pohick Regional Library" },
+    { "code": "Reston Regional Library", "name": "Reston Regional Library" },
+    { "code": "Richard Byrd Library", "name": "Richard Byrd Library" },
+    { "code": "Sherwood Regional Library", "name": "Sherwood Regional Library" },
+    { "code": "Thomas Jefferson Library", "name": "Thomas Jefferson Library" },
+    { "code": "Tysons-Pimmit Regional Library", "name": "Tysons-Pimmit Regional Library" }
+  ],
+  "irving": [
+    { "code": "South", "name": "South" },
+    { "code": "Valley Ranch", "name": "Valley Ranch" },
+    { "code": "West", "name": "West" }
+  ],
+  "ames": [
+    { "code": "Ames Public Library", "name": "Ames Public Library" }
+  ],
+  "opelika": [
+    { "code": "Opelika Public Library", "name": "Opelika Public Library" }
+  ],
+  "urbandale": [
+    { "code": "Urbandale Public Library", "name": "Urbandale Public Library" }
+  ],
+  "santa-cruz": [
+    { "code": "Aptos", "name": "Aptos" },
+    { "code": "Boulder Creek", "name": "Boulder Creek" },
+    { "code": "Branciforte", "name": "Branciforte" },
+    { "code": "Capitola", "name": "Capitola" },
+    { "code": "Downtown", "name": "Downtown" },
+    { "code": "Felton", "name": "Felton" },
+    { "code": "Garfield Park", "name": "Garfield Park" },
+    { "code": "La Selva Beach", "name": "La Selva Beach" },
+    { "code": "Live Oak", "name": "Live Oak" },
+    { "code": "Scotts Valley", "name": "Scotts Valley" }
+  ],
+  "sandiego": [
+    { "code": "Allied Gardens-Benjamin Library", "name": "Allied Gardens-Benjamin Library" },
+    { "code": "Balboa Library", "name": "Balboa Library" },
+    { "code": "Carmel Mountain Ranch Library", "name": "Carmel Mountain Ranch Library" },
+    { "code": "Carmel Valley Library", "name": "Carmel Valley Library" },
+    { "code": "Central Library", "name": "Central Library" },
+    { "code": "City Heights-Weingart Library", "name": "City Heights-Weingart Library" },
+    { "code": "College-Rolando Library", "name": "College-Rolando Library" },
+    { "code": "Kensington-Normal Heights Library", "name": "Kensington-Normal Heights Library" },
+    { "code": "La Jolla-Riford Library", "name": "La Jolla-Riford Library" },
+    { "code": "Linda Vista Library", "name": "Linda Vista Library" },
+    { "code": "Logan Heights Library", "name": "Logan Heights Library" },
+    { "code": "Mira Mesa Library", "name": "Mira Mesa Library" },
+    { "code": "Mission Hills-Hillcrest Knox Library", "name": "Mission Hills-Hillcrest Knox Library" },
+    { "code": "Mission Valley Library", "name": "Mission Valley Library" },
+    { "code": "Mountain View-Beckwourth Library", "name": "Mountain View-Beckwourth Library" },
+    { "code": "North Clairemont Library", "name": "North Clairemont Library" },
+    { "code": "North Park Library", "name": "North Park Library" },
+    { "code": "North University Community Library", "name": "North University Community Library" },
+    { "code": "Oak Park Library", "name": "Oak Park Library" },
+    { "code": "Otay Mesa-Nestor Library", "name": "Otay Mesa-Nestor Library" },
+    { "code": "Pacific Beach-Taylor Library", "name": "Pacific Beach-Taylor Library" },
+    { "code": "Pacific Highlands Ranch Library", "name": "Pacific Highlands Ranch Library" },
+    { "code": "Paradise Hills Library", "name": "Paradise Hills Library" },
+    { "code": "Point Loma-Hervey Library", "name": "Point Loma-Hervey Library" },
+    { "code": "Rancho Bernardo Library", "name": "Rancho Bernardo Library" },
+    { "code": "San Carlos Library", "name": "San Carlos Library" },
+    { "code": "Serra Mesa-Kearny Mesa Library", "name": "Serra Mesa-Kearny Mesa Library" },
+    { "code": "Skyline Hills Library", "name": "Skyline Hills Library" },
+    { "code": "Tierrasanta Library", "name": "Tierrasanta Library" },
+    { "code": "University Community Library", "name": "University Community Library" },
+    { "code": "University Heights Library", "name": "University Heights Library" },
+    { "code": "Valencia Park-Malcolm X Library", "name": "Valencia Park-Malcolm X Library" }
+  ]
+}

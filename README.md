@@ -2,7 +2,7 @@
 
 Dewey turns a reading list into a practical library trip. Paste up to 25 books—or ask for recommendations—choose a supported library system and branch, and see live shelf availability and call numbers.
 
-Currently supports the listed library systems using BiblioCommons, plus the DeKalb County Public Library Polaris catalog in beta (print titles only).
+Currently supports 32 listed library systems using BiblioCommons and eight Polaris systems in beta: DeKalb County (GA), Fairfax County (VA), Irving (TX), Ames (IA), Opelika (AL), Urbandale (IA), Santa Cruz County (CA), and San Diego (CA). Polaris checks are print-only.
 
 [Try Dewey](https://deweybooks.vercel.app) · [Read the project story](https://dimadimadima.com/projects/dewey)
 
@@ -15,15 +15,15 @@ Currently supports the listed library systems using BiblioCommons, plus the DeKa
 - Generates book recommendations and verifies them against the catalog.
 - Saves a local wishlist without requiring an account.
 - Includes generic age-band and topic starter lists.
-- Finds nearby Fulton and DeKalb branches by ZIP, city, address, branch name, or an explicit one-time location request.
+- Finds nearby Fulton, DeKalb, and Fairfax branches by ZIP, city, address, branch name, or an explicit one-time location request.
 
 The model recommends. The library catalog verifies. When the match is uncertain, Dewey says so instead of presenting a guess as fact.
 
 ## How it works
 
-Dewey is a Next.js application. A library-system registry dispatches server-side availability checks to a normalized provider adapter. Fulton and the other supported systems use the same BiblioCommons JSON gateway as their public catalogs. The DeKalb preview uses a logged-out, read-only Polaris catalog session and supports print books only. Both paths apply title and author matching before returning availability to the browser. Recommendation requests use OpenRouter; the OpenRouter credential remains server-side.
+Dewey is a Next.js application. A library-system registry dispatches server-side availability checks to a normalized provider adapter. Fulton and the other supported BiblioCommons systems use the same JSON gateway as their public catalogs. Each Polaris preview uses its own registry-defined catalog base and context while sharing one logged-out, read-only adapter; Polaris supports print books only. Both paths apply title and author matching before returning availability to the browser. Recommendation requests use OpenRouter; the OpenRouter credential remains server-side.
 
-Both public catalog integrations are unofficial and may change. Dewey is an independent community project and is not affiliated with or endorsed by Fulton County Library System, DeKalb County Public Library, BiblioCommons, or Polaris.
+Both public catalog integrations are unofficial and may change. Dewey is an independent community project and is not affiliated with or endorsed by any supported library system, BiblioCommons, or Polaris.
 
 ## Local development
 
@@ -44,9 +44,9 @@ npm run test:polaris
 npm run test:polaris:live
 ```
 
-The live check is read-only and uses generic published titles against DeKalb's logged-out catalog.
+The live check is read-only and uses generic published titles against every configured Polaris catalog.
 
-Branch-location data comes from the two library systems' official public location pages. Refresh and validate the bundled file with:
+Branch-location data comes from official Fulton and DeKalb location pages plus a reviewed Fairfax location bundle. Refresh and validate the generated file with:
 
 ```bash
 node scripts/refresh-branch-locations.mjs

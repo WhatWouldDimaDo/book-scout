@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseAvailability, parseSearchResults } from "../lib/polaris-parser.mjs";
-import { fetchAvailability, findBestBib, rankNearbyAvailableBranches } from "../lib/polaris.js";
+import { fetchAvailability, findBestBib, getPolarisSettings, rankNearbyAvailableBranches } from "../lib/polaris.js";
+
+const settings = getPolarisSettings({
+  slug: "test",
+  provider: "polaris",
+  catalogBase: "https://catalog.example.test/polaris/",
+  catalogContext: "1.1033.0.0.1",
+});
 
 function result({ pos, bibId, title, author = "", format = "Book", cover = "" }) {
   return `<div class="search__position"><a id="__pos-${pos}"></a></div>
@@ -72,7 +79,7 @@ test("retries a crowded title search with title sorting to find the exact record
     },
   };
 
-  const match = await findBestBib(session, { title: "Curious George", author: "" });
+  const match = await findBestBib(session, { title: "Curious George", author: "" }, settings);
   assert.equal(match.bibId, "304878");
   assert.equal(match.title, "Curious George");
 });
@@ -101,8 +108,8 @@ test("uses the title-sorted result position for the subsequent holdings request"
     },
   };
 
-  const match = await findBestBib(session, { title: "Curious George", author: "" });
-  await fetchAvailability(session, match, "Decatur Library");
+  const match = await findBestBib(session, { title: "Curious George", author: "" }, settings);
+  await fetchAvailability(session, match, "Decatur Library", settings);
 
   const params = new URL(availabilityUrl).searchParams;
   assert.equal(params.get("pos"), "7");

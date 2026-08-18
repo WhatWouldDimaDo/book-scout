@@ -138,6 +138,7 @@ async function buildDekalbLocations() {
 const locations = [
   ...(await buildFultonLocations()),
   ...(await buildDekalbLocations()),
+  ...JSON.parse(await readFile(new URL("../data/additionalBranchLocations.json", import.meta.url), "utf8")),
 ].sort((a, b) => a.systemName.localeCompare(b.systemName) || a.name.localeCompare(b.name));
 
 await writeFile(

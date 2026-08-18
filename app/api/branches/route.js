@@ -12,8 +12,8 @@ const cache = new Map();
 // Branch codes aren't exposed as a dedicated endpoint on the gateway — they
 // ride along as facet counts on any search. Pick a query with broad hits
 // across the whole system so every branch shows up in the STATUS facet.
-async function fetchBranches(library) {
-  const url = `https://gateway.bibliocommons.com/v2/libraries/${library}/bibs/search?searchType=smart&query=harry%20potter&limit=1`;
+async function fetchBranches(system) {
+  const url = `https://gateway.bibliocommons.com/v2/libraries/${system.slug}/bibs/search?searchType=smart&query=harry%20potter&limit=1`;
   const res = await fetch(url, {
     headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
     cache: "no-store",
@@ -27,7 +27,14 @@ async function fetchBranches(library) {
 
   const branches = fieldFilters
     .filter((f) => f.value && !f.value.startsWith("_"))
-    .map((f) => ({ code: f.value, label: f.label || f.value }))
+    .filter((f) => !system.branchLabelPrefix || (f.label || f.value).startsWith(system.branchLabelPrefix))
+    .map((f) => ({
+      code: f.value,
+      label: (f.label || f.value)
+        .replace(system.branchLabelStripPrefix || /^_+/, "")
+        .replace(/^_+/, "")
+        .trim(),
+    }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
   return branches;
@@ -55,7 +62,7 @@ export async function GET(request) {
   }
 
   try {
-    const branches = await fetchBranches(library);
+    const branches = await fetchBranches(system);
     if (branches.length === 0) throw new Error("no branches in facet");
     cache.set(library, { branches, fetchedAt: Date.now() });
     return NextResponse.json({ branches });

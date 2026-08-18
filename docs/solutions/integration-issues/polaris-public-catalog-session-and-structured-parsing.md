@@ -1,5 +1,5 @@
 ---
-title: DeKalb Polaris requires a sessionful public-catalog adapter
+title: Polaris public catalogs require a sessionful, system-configured adapter
 date: 2026-08-13
 category: integration-issues
 module: Library catalog providers
@@ -15,7 +15,7 @@ severity: high
 tags: [polaris, dekalb, catalog-adapter, anonymous-session, html-parsing, library-switching]
 ---
 
-# DeKalb Polaris requires a sessionful public-catalog adapter
+# Polaris public catalogs require a sessionful, system-configured adapter
 
 ## Problem
 
@@ -53,6 +53,8 @@ Use one isolated anonymous cookie jar per title and keep it through this read-on
 
 Library-system switching must use the same registry on client and server. Clear old results, coerce unsupported formats, validate that a branch belongs to its system, disable searches while selection loads, and ignore responses from an older selection epoch.
 
+Polaris deployments also vary by hostname, optional `/polaris` path, PowerPAC version, and numeric catalog context. Store `catalogBase` and `catalogContext` with each system in the static registry and pass the resolved system into the shared adapter. Validate that the base is plain HTTPS and that the context matches the expected dotted numeric shape. Do not derive either value from request parameters.
+
 ## Why This Works
 
 It follows the same anonymous protocol as the public Polaris UI and preserves the structural boundaries needed for deterministic matching. The provider returns the same normalized result shape as BiblioCommons without sharing session state globally or accessing patron data.
@@ -62,6 +64,7 @@ It follows the same anonymous protocol as the public Polaris UI and preserves th
 - Keep deterministic parser fixtures for exact titles, title-sort fallback positions, author disambiguation, media rejection, missing branches, header-derived status, call numbers, precise distance ranking, and expired sessions.
 - Treat an exact normalized title as primary even when an AI-supplied author hint differs from the catalog's author form; use author similarity to disambiguate identical exact titles, not to promote a broader title above an exact one.
 - Run `npm run test:polaris:live` before considering provider changes complete.
+- Do not enable a system from a vendor directory or product badge alone. Replay the full anonymous search → AJAX results → holdings sequence against a known title, confirm the selected branch name exactly, and keep a live positive-control check for every enabled catalog.
 - Never classify provider/session failures as a genuine `not_found` result.
 - Keep formats and bundled branches in `data/libraries.json` and validate them in the API.
 - Add future catalog families through `lib/catalogProviders.js`, not library-slug conditionals spread through the UI.

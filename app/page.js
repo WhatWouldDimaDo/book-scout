@@ -63,6 +63,8 @@ const FORMAT_KEY = "dewey-format";
 const OUTCOME_FEEDBACK_NEXT_PROMPT_KEY = "dewey-outcome-feedback-next-prompt";
 const DEFAULT_LIBRARY = "fulcolibrary";
 const DEFAULT_BRANCH = "PONCE";
+const BIBLIOCOMMONS_SYSTEM_COUNT = libraries.filter((item) => (item.provider || "bibliocommons") === "bibliocommons").length;
+const POLARIS_SYSTEM_COUNT = libraries.filter((item) => item.provider === "polaris").length;
 
 function branchStorageKey(library) {
   return `dewey-branch-${library}`;
@@ -70,10 +72,10 @@ function branchStorageKey(library) {
 
 function systemDisplayName(slug) {
   if (slug === "fulcolibrary") return "Fulton County";
-  if (slug === "dekalb") return "DeKalb County · Beta";
   const lib = libraries.find((l) => l.slug === slug);
   if (!lib) return slug;
-  return lib.name.replace(/\s*\([^)]*\)/, "").split(",")[0].trim();
+  const name = lib.name.replace(/\s*\([^)]*\)/, "").split(",")[0].replace(/\s*—\s*preview$/, "").trim();
+  return lib.provider === "polaris" ? `${name} · Beta` : name;
 }
 
 function loadJSON(key, fallback) {
@@ -1053,9 +1055,9 @@ export default function Home() {
                   </select>
                 </div>
                 <p className="hint settings-hint">
-                  {library === "dekalb"
-                    ? "Beta: DeKalb County Public Library’s Polaris catalog. Print titles only."
-                    : `${libraries.length - 1} systems on BiblioCommons — availability data is live from each catalog.`}
+                  {selectedLibrary.provider === "polaris"
+                    ? `Beta: ${systemDisplayName(library).replace(" · Beta", "")}’s public Polaris catalog. Print titles only.`
+                    : `${BIBLIOCOMMONS_SYSTEM_COUNT} systems on BiblioCommons — availability data is live from each catalog.`}
                 </p>
               </div>
               <div className="settings-field">
@@ -1471,7 +1473,7 @@ export default function Home() {
       )}
 
       <p className="catalog-support-note">
-        Currently supports the listed library systems using BiblioCommons, plus the DeKalb County Public Library Polaris catalog in beta (print titles only).
+        Currently supports {BIBLIOCOMMONS_SYSTEM_COUNT} library systems using BiblioCommons and {POLARIS_SYSTEM_COUNT} systems using Polaris in beta (print titles only).
       </p>
       <footer className="site-credit">
         <span>See more of my work at</span>

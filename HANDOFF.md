@@ -18,21 +18,25 @@ Dewey is a free library-planning web app. A visitor can paste a reading list, ch
 - `lib/catalogProviders.js` — common provider dispatch contract.
 - `app/api/recommend/route.js` — books-only recommendations with prompt and request limits.
 - `lib/bibliocommons.js` — catalog search, match confidence, and availability adapter.
-- `lib/polaris.js` — DeKalb print-book preview using an isolated logged-out Polaris session.
+- `lib/polaris.js` — configurable print-book adapter using an isolated logged-out Polaris session per title.
 - `lib/polaris-parser.mjs` — structured Polaris result and branch-holdings parser.
 - `components/BranchPicker.js` — unified ZIP/city/address/name search, explicit nearby-location action, and mobile branch sheet.
 - `lib/branchLocator.mjs` + `data/branchLocations.json` — client-side search/distance logic and official branch coordinates.
-- `scripts/refresh-branch-locations.mjs` — rebuilds the location bundle from official Fulton and DeKalb public pages.
+- `data/polarisBranches.json` — bundled branch choices for verified Polaris systems.
+- `data/additionalBranchLocations.json` — reviewed official Fairfax coordinates appended during refresh.
+- `scripts/refresh-branch-locations.mjs` — rebuilds the location bundle from official Fulton and DeKalb pages plus reviewed additional locations.
 - `lib/llm.js` — server-only OpenRouter client.
 - `lib/analytics.js` — explicit PostHog events and campaign attribution; no prompt or list text.
 - `data/starterLists.json` — generic age-band and topic lists.
+- `docs/research/catalog-coverage-estimate-2026-08-18.md` — sourced, caveated network/outlet/service-population coverage estimate.
 
 ## Operational notes
 
 - `OPENROUTER_API_KEY` is server-only and must remain in Vercel or an ignored local environment file.
 - `NEXT_PUBLIC_POSTHOG_KEY` is an optional public client token; analytics is disabled when it is absent.
 - The BiblioCommons JSON gateway is unofficial and may change.
-- The DeKalb Polaris preview is also unofficial, print-only, and depends on public HTML. It must preserve one anonymous session across search, AJAX results, and holdings.
+- The Polaris previews are unofficial, print-only, and depend on public HTML. Each system supplies an HTTPS catalog base and numeric context in `data/libraries.json`; every lookup must preserve one anonymous session across search, AJAX results, and holdings.
+- A system is enabled only after a real anonymous title search and holdings check passes against its current public catalog. The current verified Polaris cohort is DeKalb, Fairfax, Irving, Ames, Opelika, Urbandale, Santa Cruz County, and San Diego. San Diego moved from BiblioCommons to Polaris in August 2026; keep vendor configuration current rather than leaving a dead catalog selector.
 - Library formats and branches are validated from the shared registry before a provider is called. New catalog families should be added as provider adapters rather than UI/API special cases.
 - Rate limiting is in-memory and is not a dependable hard spending boundary across instances or deployments.
 - Keep a provider-enforced budget on a dedicated Dewey OpenRouter key before broad promotion.
@@ -44,6 +48,7 @@ Dewey is a free library-planning web app. A visitor can paste a reading list, ch
 npm ci
 npm run test:polaris
 npm test
+npm run test:polaris:live
 npm run build
 ```
 

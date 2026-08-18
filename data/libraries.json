@@ -13,7 +13,69 @@
     "provider": "polaris",
     "branchSource": "dekalb",
     "defaultBranch": "Dunwoody Library",
-    "formats": ["print"]
+    "formats": ["print"],
+    "catalogBase": "https://dekalb.polarislibrary.com/polaris",
+    "catalogContext": "22.1033.0.0.6"
+  },
+  {
+    "slug": "fairfax",
+    "name": "Fairfax County (Northern Virginia), VA — preview",
+    "provider": "polaris",
+    "branchSource": "fairfax",
+    "defaultBranch": "Chantilly Regional Library",
+    "formats": ["print"],
+    "catalogBase": "https://fcplcat.fairfaxcounty.gov",
+    "catalogContext": "1.1033.0.0.1"
+  },
+  {
+    "slug": "irving",
+    "name": "Irving, TX — preview",
+    "provider": "polaris",
+    "branchSource": "irving",
+    "defaultBranch": "Valley Ranch",
+    "formats": ["print"],
+    "catalogBase": "https://irving.polarislibrary.com/polaris",
+    "catalogContext": "1.1033.0.0.1"
+  },
+  {
+    "slug": "ames",
+    "name": "Ames, IA — preview",
+    "provider": "polaris",
+    "branchSource": "ames",
+    "defaultBranch": "Ames Public Library",
+    "formats": ["print"],
+    "catalogBase": "https://catalog.amespl.org/polaris",
+    "catalogContext": "3.1033.0.0.1"
+  },
+  {
+    "slug": "opelika",
+    "name": "Opelika, AL — preview",
+    "provider": "polaris",
+    "branchSource": "opelika",
+    "defaultBranch": "Opelika Public Library",
+    "formats": ["print"],
+    "catalogBase": "https://catalog.opelika.org/polaris",
+    "catalogContext": "3.1033.0.0.5"
+  },
+  {
+    "slug": "urbandale",
+    "name": "Urbandale, IA — preview",
+    "provider": "polaris",
+    "branchSource": "urbandale",
+    "defaultBranch": "Urbandale Public Library",
+    "formats": ["print"],
+    "catalogBase": "https://catalog.urbandalelibrary.org/polaris",
+    "catalogContext": "3.1033.0.0.3"
+  },
+  {
+    "slug": "santa-cruz",
+    "name": "Santa Cruz County, CA — preview",
+    "provider": "polaris",
+    "branchSource": "santa-cruz",
+    "defaultBranch": "Aptos",
+    "formats": ["print"],
+    "catalogBase": "https://catalog.santacruzpl.org/polaris",
+    "catalogContext": "1.1033.0.0.1"
   },
   {
     "slug": "seattle",
@@ -45,7 +107,13 @@
   },
   {
     "slug": "sandiego",
-    "name": "San Diego, CA"
+    "name": "San Diego, CA — preview",
+    "provider": "polaris",
+    "branchSource": "sandiego",
+    "defaultBranch": "Central Library",
+    "formats": ["print"],
+    "catalogBase": "https://sdpl.polarislibrary.com/polaris",
+    "catalogContext": "1.1033.0.0.6"
   },
   {
     "slug": "chipublib",
@@ -102,5 +170,47 @@
   {
     "slug": "librarypoint",
     "name": "Central Rappahannock, VA"
+  },
+  {
+    "slug": "vpl",
+    "name": "Vancouver, BC"
+  },
+  {
+    "slug": "epl",
+    "name": "Edmonton, AB"
+  },
+  {
+    "slug": "ottawa",
+    "name": "Ottawa, ON"
+  },
+  {
+    "slug": "halifax",
+    "name": "Halifax, NS"
+  },
+  {
+    "slug": "indypl",
+    "name": "Indianapolis, IN",
+    "branchLabelPrefix": "IndyPL -",
+    "branchLabelStripPrefix": "IndyPL -"
+  },
+  {
+    "slug": "marinet",
+    "name": "MARINet (Marin County), CA"
+  },
+  {
+    "slug": "paloalto",
+    "name": "Palo Alto, CA"
+  },
+  {
+    "slug": "oaklandlibrary",
+    "name": "Oakland, CA"
+  },
+  {
+    "slug": "pima",
+    "name": "Pima County (Tucson), AZ"
+  },
+  {
+    "slug": "mymcpl",
+    "name": "Mid-Continent (Kansas City area), MO"
   }
 ]
