@@ -78,3 +78,5 @@ It follows the same anonymous protocol as the public Polaris UI and preserves th
 ## Preview-deployment note
 
 The production-only asset prefix required by the portfolio's `/dewey` reverse proxy must be keyed to `VERCEL_ENV === "production"`, not the broader `NODE_ENV === "production"`. Vercel preview builds also set `NODE_ENV=production`; pointing their immutable asset URLs at the canonical production origin makes the new preview hashes return 404 and leaves an unstyled, unhydrated page.
+
+Because that prefix is decided at build time, do not promote a preview artifact to production. Build with the production target (`vercel build --prod`) and deploy that exact output (`vercel deploy --prebuilt --prod`), then verify both the direct app and the same-origin proxy resolve the generated CSS/JS URLs with HTTP 200.
