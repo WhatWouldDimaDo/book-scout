@@ -2,6 +2,12 @@
 
 Updated 2026-08-18. This is a planning estimate, not a user or adoption metric.
 
+Production verification on 2026-08-18 confirmed non-empty branch discovery
+for all 32 configured BiblioCommons networks and a read-only title/holdings
+positive control for all eight configured Polaris networks. These checks show
+that the configured integrations responded at release time; they do not make
+the unofficial catalog interfaces contractual or permanently stable.
+
 ## Current scope
 
 - 40 configured catalog networks: 36 in the United States and four in Canada.

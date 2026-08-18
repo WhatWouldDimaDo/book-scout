@@ -6,6 +6,10 @@
 
 **Deployment:** pushes to `main` build in the linked Vercel project.
 
+**Latest verified release:** 2026-08-18 feature commit `156fd5d`, Vercel deployment
+`dpl_EY8uWxPAScS4BRLWsDCjWY1PEg2r`. The direct app and the portfolio proxy are
+live at https://deweybooks.vercel.app and https://dimadimadima.com/dewey.
+
 ## Product
 
 Dewey is a free library-planning web app. A visitor can paste a reading list, choose a supported library system and branch, and see live availability and call numbers. The app also offers book recommendations, generic starter lists, and a browser-local wishlist. It requires no account.
@@ -53,3 +57,11 @@ npm run build
 ```
 
 Then verify the list-check and recommendation flows, mobile layout, metadata, internal links, and explicit analytics events. See [README.md](README.md), [DEPLOY.md](DEPLOY.md), and [SECURITY.md](SECURITY.md) for public-facing guidance.
+
+The 2026-08-18 release passed 18 unit/integration tests, a clean production
+build, live positive-control searches against all eight configured Polaris
+catalogs, and production branch discovery against all 32 configured
+BiblioCommons catalogs. A 390px browser check found no horizontal overflow;
+Fairfax/Chantilly returned an on-shelf *Curious George* record with a call
+number through both the direct app API and the `/dewey` reverse proxy. Vercel
+and browser error scans were clean.
