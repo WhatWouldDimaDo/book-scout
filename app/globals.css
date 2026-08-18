@@ -994,6 +994,45 @@ textarea.input-area:focus {
   gap: 10px;
 }
 
+.outcome-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-hover);
+}
+
+.outcome-feedback p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.outcome-feedback-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.outcome-feedback-actions .btn,
+.outcome-feedback-actions .btn-ghost {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 479px) {
+  .outcome-feedback {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 @media (min-width: 480px) {
   .wordmark {
     font-size: 40px;

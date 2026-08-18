@@ -60,6 +60,7 @@ const BRANCH_KEY = "dewey-branch";
 const LIBRARY_KEY = "dewey-library";
 const WISHLIST_KEY = "dewey-wishlist";
 const FORMAT_KEY = "dewey-format";
+const OUTCOME_FEEDBACK_NEXT_PROMPT_KEY = "dewey-outcome-feedback-next-prompt";
 const DEFAULT_LIBRARY = "fulcolibrary";
 const DEFAULT_BRANCH = "PONCE";
 
@@ -357,6 +358,25 @@ function CatalogResultsHeader({ branchName }) {
   );
 }
 
+function OutcomeFeedbackPrompt({ onRespond }) {
+  return (
+    <aside className="outcome-feedback" aria-labelledby="outcome-feedback-question">
+      <p id="outcome-feedback-question">Did this search help you find a book to take home?</p>
+      <div className="outcome-feedback-actions">
+        <button className="btn btn-secondary" onClick={() => onRespond("yes")}>
+          Yes
+        </button>
+        <button className="btn btn-secondary" onClick={() => onRespond("not_yet")}>
+          Not yet
+        </button>
+        <button className="btn-ghost" onClick={() => onRespond("skipped")}>
+          Skip
+        </button>
+      </div>
+    </aside>
+  );
+}
+
 function ResultCard({ result, wishlist, onToggleWishlist }) {
   const title = result.matchedTitle || result.input;
   const author = result.author || "";
@@ -500,6 +520,7 @@ export default function Home() {
   const [openStarterId, setOpenStarterId] = useState(null);
   const [checkCopyLabel, setCheckCopyLabel] = useState("Copy");
   const [chipsExpanded, setChipsExpanded] = useState(false);
+  const [outcomeFeedbackContext, setOutcomeFeedbackContext] = useState(null);
 
   // Get Recs
   const [recPrompt, setRecPrompt] = useState("");
@@ -768,9 +789,23 @@ export default function Home() {
     setCheckLoading(true);
     setCheckError(null);
     setCheckResults(null);
+    setOutcomeFeedbackContext(null);
     try {
       const results = await runAvailability(books.slice(0, 25), checkFormat, "list");
       setCheckResults(results);
+      const onShelfCount = results.filter((result) => result.status === "on_shelf").length;
+      const nextPromptAt = Number(window.localStorage.getItem(OUTCOME_FEEDBACK_NEXT_PROMPT_KEY) || 0);
+      if (onShelfCount > 0 && Date.now() >= nextPromptAt) {
+        const context = {
+          result_count: results.length,
+          on_shelf_count: onShelfCount,
+          selected_branch: branch,
+          library_system: library,
+          format: checkFormat,
+        };
+        setOutcomeFeedbackContext(context);
+        trackDeweyEvent("dewey_outcome_feedback_prompted", context);
+      }
     } catch (err) {
       if (err.code !== "STALE_SELECTION") setCheckError(err.message);
     } finally {
@@ -780,6 +815,20 @@ export default function Home() {
 
   function handleCheckList() {
     runCheck(parseBookList(listText));
+  }
+
+  function handleOutcomeFeedback(outcome) {
+    if (!outcomeFeedbackContext) return;
+    trackDeweyEvent("dewey_outcome_feedback", {
+      ...outcomeFeedbackContext,
+      outcome,
+    });
+    // Keep this optional and low-frequency; an answer or skip suppresses it for a week.
+    window.localStorage.setItem(
+      OUTCOME_FEEDBACK_NEXT_PROMPT_KEY,
+      String(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    );
+    setOutcomeFeedbackContext(null);
   }
 
   function copyResults(results, setLabel) {
@@ -1144,6 +1193,9 @@ export default function Home() {
           {!checkLoading && checkResults && checkResults.length > 0 && (
             <>
               <CatalogResultsHeader branchName={branchOptions.find((b) => b.code === branch)?.label || branch} />
+              {outcomeFeedbackContext && (
+                <OutcomeFeedbackPrompt onRespond={handleOutcomeFeedback} />
+              )}
               <div className="export-row">
                 <button className="btn btn-secondary" onClick={() => copyResults(checkResults, setCheckCopyLabel)}>
                   <Copy size={16} />
